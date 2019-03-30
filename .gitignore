@@ -1,1 +1,4 @@
 *.log
+dist/
+build/
+zgulde.egg-info/
