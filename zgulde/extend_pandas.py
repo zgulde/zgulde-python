@@ -363,6 +363,9 @@ def log2(s: Series):
     '''
     return np.log2(s)
 
+def pipe(df: DataFrame, fn: Callable):
+    return df.pipe(fn)
+
 extensions = [correlation_heatmap, nnull, nnull, drop_outliers, zscore, outliers, log, log2, ln, get_scaler]
 
 pd.Series.zscore = zscore
@@ -377,3 +380,5 @@ pd.DataFrame.nnull = nnull
 pd.DataFrame.nna = nnull
 pd.DataFrame.drop_outliers = drop_outliers
 pd.DataFrame.get_scalers = get_scalers
+pd.DataFrame.__lshift__ = pipe
+pd.DataFrame.__rshift__ = pipe
