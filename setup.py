@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='zgulde',
-    version='0.0.6',
+    version='0.0.7',
     author='Zach Gulde',
     author_email='zachgulde@gmail.com',
     description='A Small Person Utility Library',

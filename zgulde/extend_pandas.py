@@ -320,19 +320,19 @@ def correlation_heatmap(df: DataFrame, fancy=False, **kwargs):
     if not fancy:
         return sns.heatmap(df.corr(), cmap=cm.PiYG, center=0, annot=True, **kwargs)
 
-    cm = df.corr()
+    cmat = df.corr()
 
     sns.set(style="white")
     cmap = sns.diverging_palette(220, 10, as_cmap=True)
     if 'cmap' not in kwargs:
         kwargs['cmap'] = cmap
 
-    mask = np.zeros_like(cm, dtype=np.bool)
+    mask = np.zeros_like(cmat, dtype=np.bool)
     mask[np.triu_indices_from(mask)] = True
 
     # Draw the heatmap with the mask and correct aspect ratio
     plt.figure(figsize=(12, 12))
-    sns.heatmap(cm, mask=mask, cbar=True, annot=True, square=True, fmt='.2f',
+    sns.heatmap(cmat, mask=mask, cbar=True, annot=True, square=True, fmt='.2f',
                 annot_kws={'size': 10}, **kwargs)
     plt.yticks(rotation=0)
     plt.show()
