@@ -32,6 +32,7 @@ import pandas as pd
 from pandas import Series, DataFrame
 import seaborn as sns
 from matplotlib.pyplot import cm
+from matplotlib import pyplot as plt
 from typing import List, Callable
 import operator as op
 from functools import reduce
@@ -309,13 +310,31 @@ def nnull(df: DataFrame, percent=True) -> Series:
     else:
         return nulls
 
-def correlation_heatmap(df: DataFrame, **kwargs):
+def correlation_heatmap(df: DataFrame, fancy=False, **kwargs):
     '''
     Plot a heatmap of the correlation matrix for the data frame.
 
     Any additional kwargs are passed to sns.heatmap
     '''
-    return sns.heatmap(df.corr(), cmap=cm.PiYG, center=0, annot=True, **kwargs)
+    if not fancy:
+        return sns.heatmap(df.corr(), cmap=cm.PiYG, center=0, annot=True, **kwargs)
+
+    cm = df.corr()
+
+    sns.set(style="white")
+    cmap = sns.diverging_palette(220, 10, as_cmap=True)
+    if 'cmap' not in kwargs:
+        kwargs['cmap'] = cmap
+
+    mask = np.zeros_like(cm, dtype=np.bool)
+    mask[np.triu_indices_from(mask)] = True
+
+    # Draw the heatmap with the mask and correct aspect ratio
+    plt.figure(figsize=(12, 12))
+    sns.heatmap(cm, mask=mask, cbar=True, annot=True, square=True, fmt='.2f',
+                annot_kws={'size': 10}, **kwargs)
+    plt.yticks(rotation=0)
+    plt.show()
 
 def log(s: Series):
     '''
@@ -365,8 +384,6 @@ def log2(s: Series):
 
 def pipe(df: DataFrame, fn: Callable):
     return df.pipe(fn)
-
-extensions = [correlation_heatmap, nnull, nnull, drop_outliers, zscore, outliers, log, log2, ln, get_scaler]
 
 pd.Series.zscore = zscore
 pd.Series.outliers = outliers
