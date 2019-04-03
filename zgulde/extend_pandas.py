@@ -1,5 +1,5 @@
 '''
-This module adds functionaliry to pandas Series and DataFrame objects. The
+This module adds functionality to pandas Series and DataFrame objects. The
 objects in pandas will be modified by simply importing this module.
 
 The following methods are added to all Series:
@@ -17,6 +17,7 @@ and the following are added to all DataFrames
 - nnull
 - nnull
 - drop_outliers
+- get scalers
 
 See the documentation for the individual methods for more details
 (e.g. ``help(pd.Series.outliers)``)
