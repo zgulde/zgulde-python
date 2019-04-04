@@ -17,7 +17,8 @@ and the following are added to all DataFrames
 - nnull
 - nnull
 - drop_outliers
-- get scalers
+- unnest
+- get_scalers
 
 See the documentation for the individual methods for more details
 (e.g. ``help(pd.Series.outliers)``)
@@ -311,6 +312,50 @@ def nnull(df: DataFrame, percent=True) -> Series:
     else:
         return nulls
 
+def unnest_df(df: DataFrame, col: str, split=True, sep=',', reset_index=True) -> DataFrame:
+    '''
+    Turns a column with multiple values in each row in it into separate rows,
+    each with a single value.
+
+    Parameters
+    ----------
+
+    - col: name of the column to unnest
+    - split: default True. whether or not to split the data in the column. Set
+             this to False if the column already contains lists in each row
+    - sep: separator to split on. Ignored if split=False
+    - reset_index: default True. whether to reset the index in the resulting
+                   data frame. If False, the resulting data frame will have an
+                   index that could contain duplicates.
+
+    Examples
+    --------
+
+    >>> df = pd.DataFrame(dict(a=list('abc'), b=['a,b,c', 'd,e', 'f']))    
+    >>> df
+       a      b
+    0  a  a,b,c
+    1  b    d,e
+    2  c      f
+    >>> df.unnest('b')
+       a  b
+    0  a  a
+    1  a  b
+    2  a  c
+    3  b  d
+    4  b  e
+    5  c  f
+    '''
+    s = df[col].str.split(sep) if split else df[col]
+    s = s.apply(pd.Series)\
+        .stack()\
+        .reset_index(level=1, drop=True)
+
+    s.name = col
+
+    return df.drop(columns=[col]).join(s)\
+        .pipe(lambda df: df.reset_index(drop=True) if reset_index else df)
+
 def correlation_heatmap(df: DataFrame, fancy=False, **kwargs):
     '''
     Plot a heatmap of the correlation matrix for the data frame.
@@ -400,3 +445,4 @@ pd.DataFrame.drop_outliers = drop_outliers
 pd.DataFrame.get_scalers = get_scalers
 pd.DataFrame.__lshift__ = pipe
 pd.DataFrame.__rshift__ = pipe
+pd.DataFrame.unnest = unnest_df

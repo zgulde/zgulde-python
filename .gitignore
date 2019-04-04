@@ -2,3 +2,4 @@
 dist/
 build/
 zgulde.egg-info/
+__pycache__
