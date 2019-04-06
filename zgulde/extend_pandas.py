@@ -331,14 +331,14 @@ def unnest_df(df: DataFrame, col: str, split=True, sep=',', reset_index=True) ->
     Examples
     --------
 
-    >>> df = pd.DataFrame(dict(a=list('abc'), b=['a,b,c', 'd,e', 'f']))    
+    >>> df = pd.DataFrame(dict(x=list('abc'), y=['a,b,c', 'd,e', 'f']))    
     >>> df
-       a      b
+       x      y
     0  a  a,b,c
     1  b    d,e
     2  c      f
-    >>> df.unnest('b')
-       a  b
+    >>> df.unnest('y')
+       x  y
     0  a  a
     1  a  b
     2  a  c
