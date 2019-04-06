@@ -38,6 +38,7 @@ from matplotlib import pyplot as plt
 from typing import List, Callable
 import operator as op
 from functools import reduce
+from scipy.stats import ttest_ind
 
 def get_scalers(df: DataFrame, columns, **kwargs) -> Callable:
     '''
@@ -470,6 +471,43 @@ def crosstab(df: DataFrame, rows, cols, values=None, **kwargs) -> DataFrame:
         kwargs['values'] = df[values]
     return pd.crosstab(df[rows], df[cols], **kwargs)
 
+def ttest(df: DataFrame, target: str) -> DataFrame:
+    '''
+    Runs ttests for target for every unique value from every column in the data
+    frame.
+
+    The resulting t-statistic and pvalue are based on subdividing the data for
+    each unique value for each column, with each individual value indicating
+    that the test was performed based on belonging to that unique value vs not
+    belonging to that group.
+
+    Examples
+    --------
+
+    >>> from seaborn import load_dataset
+    >>> tips = load_dataset('tips')
+    >>> tips = tips[['total_bill', 'day', 'time']]
+    >>> tips.ttest('total_bill')
+                     statistic    pvalue    n
+    variable value                           
+    day      Sun      1.927317  0.055111   76
+             Sat      0.855634  0.393046   87
+             Thur    -2.170294  0.030958   62
+             Fri     -1.345462  0.179735   19
+    time     Dinner   2.897638  0.004105  176
+             Lunch   -2.897638  0.004105   68
+    '''
+    results = []
+    for col in df.drop(columns=target):
+        unique_vals = df[col].unique()
+        ttests = DataFrame([ttest_ind(df[df[col] == v][target],
+                                      df[df[col] != v][target]) 
+                            for v in unique_vals])
+        ns = [df[df[col] == v].shape[0] for v in unique_vals]
+        ttests = ttests.assign(n=ns, value=unique_vals, variable=col)
+        results.append(ttests)
+    return pd.concat(results, axis=0).set_index(['variable', 'value'])
+
 def pipe(df: DataFrame, fn: Callable):
     return df.pipe(fn)
 
@@ -490,3 +528,4 @@ pd.DataFrame.__rshift__ = pipe
 pd.DataFrame.unnest = unnest_df
 pd.DataFrame.crosstab = crosstab
 pd.DataFrame.xtab = crosstab
+pd.DataFrame.ttest = ttest
