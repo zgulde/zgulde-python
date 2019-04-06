@@ -456,16 +456,24 @@ def crosstab(df: DataFrame, rows, cols, values=None, **kwargs) -> DataFrame:
     3  b  d  3
     4  b  c  4
     5  b  d  5
+    >>> df.crosstab('x', 'y')
+    y  c  d
+    x      
+    a  2  1
+    b  1  2
     >>> (df.crosstab('x', 'y') == pd.crosstab(df.x, df.y)).all(axis=None)
     True
-    >>> ct1 = df.crosstab('x', 'y', margins=True)
-    >>> ct2 = pd.crosstab(df.x, df.y, margins=True)
-    >>> (ct1 == ct2).all(axis=None)
-    True
-    >>> ct1 = df.xtab(rows='x', cols='y', values='z', aggfunc='mean')
-    >>> ct2 = pd.crosstab(index=df.x, columns=df.y, values=df.z, aggfunc='mean')
-    >>> (ct1 == ct2).all(axis=None)
-    True
+    >>> df.crosstab('x', 'y', margins=True)
+    y    c  d  All
+    x             
+    a    2  1    3
+    b    1  2    3
+    All  3  3    6
+    >>> df.xtab(rows='x', cols='y', values='z', aggfunc='mean')
+    y  c  d
+    x      
+    a  1  1
+    b  4  4
     '''
     if values is not None:
         kwargs['values'] = df[values]
