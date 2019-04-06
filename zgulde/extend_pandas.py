@@ -14,11 +14,11 @@ The following methods are added to all Series:
 and the following are added to all DataFrames
 
 - correlation_heatmap
-- nnull
-- nnull
+- nnull (nna)
 - drop_outliers
 - unnest
 - get_scalers
+- crosstab (xtab)
 
 See the documentation for the individual methods for more details
 (e.g. ``help(pd.Series.outliers)``)
@@ -428,6 +428,48 @@ def log2(s: Series):
     '''
     return np.log2(s)
 
+def crosstab(df: DataFrame, rows, cols, values=None, **kwargs) -> DataFrame:
+    '''
+    Shortcut to call to pd.crosstab.
+
+    Parameters
+    ----------
+
+    - rows: the name of the columns that will make up the rows in resulting
+            contingency table
+    - cols: the name of the columns that will make up the columns in resulting
+            contingency table
+    - values: (optional) name of the column to use for the cell values in the
+              resulting contingency table. If supplied, aggfunc must be provided
+              as well. See pd.crosstab for more details.
+    
+    Examples
+    --------
+
+    >>> df = pd.DataFrame(dict(x=list('aaabbb'), y=list('cdcdcd'), z=range(6)))
+    >>> df
+       x  y  z
+    0  a  c  0
+    1  a  d  1
+    2  a  c  2
+    3  b  d  3
+    4  b  c  4
+    5  b  d  5
+    >>> (df.crosstab('x', 'y') == pd.crosstab(df.x, df.y)).all(axis=None)
+    True
+    >>> ct1 = df.crosstab('x', 'y', margins=True)
+    >>> ct2 = pd.crosstab(df.x, df.y, margins=True)
+    >>> (ct1 == ct2).all(axis=None)
+    True
+    >>> ct1 = df.xtab(rows='x', cols='y', values='z', aggfunc='mean')
+    >>> ct2 = pd.crosstab(index=df.x, columns=df.y, values=df.z, aggfunc='mean')
+    >>> (ct1 == ct2).all(axis=None)
+    True
+    '''
+    if values is not None:
+        kwargs['values'] = df[values]
+    return pd.crosstab(df[rows], df[cols], **kwargs)
+
 def pipe(df: DataFrame, fn: Callable):
     return df.pipe(fn)
 
@@ -446,3 +488,5 @@ pd.DataFrame.get_scalers = get_scalers
 pd.DataFrame.__lshift__ = pipe
 pd.DataFrame.__rshift__ = pipe
 pd.DataFrame.unnest = unnest_df
+pd.DataFrame.crosstab = crosstab
+pd.DataFrame.xtab = crosstab
