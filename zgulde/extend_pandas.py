@@ -4,21 +4,22 @@ objects in pandas will be modified by simply importing this module.
 
 The following methods are added to all Series:
 
-- zscore
-- outliers
-- log
-- log2
-- ln
-- get_scaler
+- get_scaler: obtain a function that scales a series
+- ln: natural log
+- log: log base 10
+- log2: log base 2
+- outliers: detect outliers
+- zscore: obtain the z-score for every value
 
 and the following are added to all DataFrames
 
-- correlation_heatmap
-- nnull (nna)
-- drop_outliers
-- unnest
-- get_scalers
-- crosstab (xtab)
+- correlation_heatmap: plot a heatmap of the correlations
+- crosstab (xtab): shortcut to pd.crosstab
+- drop_outliers: remove outliers
+- get_scalers: obtain a function that scales multiple columns
+- nnull (nna): summarize the number of missing values
+- ttest: run a ttest for multiple categories
+- unnest: handle multiple values in a single cell 
 
 See the documentation for the individual methods for more details
 (e.g. ``help(pd.Series.outliers)``)
@@ -277,17 +278,11 @@ def outliers(s: Series, how='iqr', k=1.5, std_cutoff=2) -> Series:
         return zscore(s).abs() > std_cutoff
     raise ValueError('how must be one of {iqr,std}')
 
-def nnull(df: DataFrame, percent=True) -> Series:
+def nnull(df: DataFrame) -> DataFrame:
     '''
-    Provide a summary of null values in each column
+    Provide a summary of null values in each column.
 
     alias of nna
-
-    Parameters
-    ----------
-
-    - percent: whether to show the number of null values as a percent of the
-               total. Default True
 
     Examples
     --------
@@ -299,19 +294,13 @@ def nnull(df: DataFrame, percent=True) -> Series:
     1  2.0  NaN
     2  NaN  NaN
     >>> df.nnull()
-    x    0.333333
-    y    0.666667
-    dtype: float64
-    >>> df.nnull(percent=False)
-    x    1
-    y    2
-    dtype: int64
+       n_missing  p_missing
+    x          1   0.333333
+    y          2   0.666667
     '''
-    nulls = df.isnull().sum()
-    if percent:
-        return nulls / df.shape[0]
-    else:
-        return nulls
+    n_missing = df.isnull().sum()
+    p_missing = n_missing / df.shape[0]
+    return pd.DataFrame(dict(n_missing=n_missing, p_missing=p_missing))
 
 def unnest_df(df: DataFrame, col: str, split=True, sep=',', reset_index=True) -> DataFrame:
     '''
