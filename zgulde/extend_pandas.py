@@ -39,7 +39,7 @@ from matplotlib import pyplot as plt
 from typing import List, Callable
 import operator as op
 from functools import reduce
-from scipy.stats import ttest_ind
+from scipy.stats import ttest_ind, chi2_contingency
 
 def get_scalers(df: DataFrame, columns, **kwargs) -> Callable:
     '''
@@ -505,6 +505,9 @@ def ttest(df: DataFrame, target: str) -> DataFrame:
         results.append(ttests)
     return pd.concat(results, axis=0).set_index(['variable', 'value'])
 
+def chi2(df: DataFrame, rows: str, cols: str, **kwargs):
+    return chi2_contingency(df.crosstab(rows, cols), **kwargs)
+
 def pipe(df: DataFrame, fn: Callable):
     return df.pipe(fn)
 
@@ -526,3 +529,4 @@ pd.DataFrame.unnest = unnest_df
 pd.DataFrame.crosstab = crosstab
 pd.DataFrame.xtab = crosstab
 pd.DataFrame.ttest = ttest
+pd.DataFrame.chi2 = chi2
