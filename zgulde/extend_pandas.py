@@ -62,6 +62,42 @@ import operator as op
 from functools import reduce
 import itertools as it
 from scipy.stats import ttest_ind, chi2_contingency
+import re
+
+column_name_re = re.compile(r'[^a-zA-Z_0-9]')
+
+def clean_col_name(col: str) -> str:
+    col = col.strip().lower().replace(' ', '_').replace('.', '_').replace('-', '_')
+    return re.sub(column_name_re, '', col)
+
+def cleanup_column_names(df: DataFrame, inplace=False) -> DataFrame:
+    '''
+    Returns a data frame with the column names cleaned up. Special characters
+    are removed and spaces, dots, and dashes are replaced with underscores.
+
+    Examples
+    --------
+
+    >>> df = pd.DataFrame({'*Feature& A': [1, 2], ' feature.b  ': [2, 3], 'FEATURE-C': [3, 4]})
+    >>> df
+       *Feature& A   feature.b    FEATURE-C
+    0            1             2          3
+    1            2             3          4
+    >>> df.cleanup_column_names()
+       feature_a  feature_b  feature_c
+    0          1          2          3
+    1          2          3          4
+    >>> df
+       *Feature& A   feature.b    FEATURE-C
+    0            1             2          3
+    1            2             3          4
+    >>> df.cleanup_column_names(inplace=True)
+    >>> df.cleanup_column_names()
+       feature_a  feature_b  feature_c
+    0          1          2          3
+    1          2          3          4
+    '''
+    return df.rename(mapper=clean_col_name, axis='columns', inplace=inplace)
 
 def get_scalers(df: DataFrame, columns, **kwargs) -> Callable:
     '''
@@ -609,6 +645,7 @@ pd.Series.log = log
 pd.Series.outliers = outliers
 pd.Series.zscore = zscore
 
+pd.DataFrame.cleanup_column_names = cleanup_column_names
 pd.DataFrame.chi2 = chi2
 pd.DataFrame.correlation_heatmap = correlation_heatmap
 pd.DataFrame.crosstab = crosstab
