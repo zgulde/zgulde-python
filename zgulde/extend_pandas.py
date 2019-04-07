@@ -4,7 +4,7 @@ objects in pandas will be modified by simply importing this module.
 
 The following methods are added to all Series:
 
-- cut: put data into bins; shortcut to pd.cut
+- cut (bin): put data into bins; shortcut to pd.cut
 - get_scaler: obtain a function that scales a series
 - ln: natural log
 - log: log base 10
@@ -23,11 +23,30 @@ and the following are added to all DataFrames
 - chi2: run chi square tests on all column combinations 
 - unnest: handle multiple values in a single cell 
 
-See the documentation for the individual methods for more details
-(e.g. ``help(pd.Series.outliers)``)
+It also defines the left and right shift operators to be the same thing as
+`.pipe` like this:
 
 >>> import pandas as pd
 >>> import numpy as np
+>>> df = pd.DataFrame(dict(x=np.arange(4)))
+>>> df
+   x
+0  0
+1  1
+2  2
+3  3
+>>> create_y = lambda df: df.assign(y=df.x + 1)
+>>> df >> create_y
+   x  y
+0  0  1
+1  1  2
+2  2  3
+3  3  4
+>>> ((df >> create_y) == df.pipe(create_y)).all(axis=None)
+True
+
+See the documentation for the individual methods for more details and examples
+(e.g. ``help(pd.Series.outliers)``)
 '''
 
 # More general summary function
@@ -581,6 +600,7 @@ def chi2(df: DataFrame) -> Tuple[DataFrame, DataFrame]:
 def pipe(df: DataFrame, fn: Callable):
     return df.pipe(fn)
 
+pd.Series.bin = cut
 pd.Series.cut = cut
 pd.Series.get_scaler = get_scaler
 pd.Series.ln = ln
