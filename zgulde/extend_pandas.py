@@ -4,6 +4,7 @@ objects in pandas will be modified by simply importing this module.
 
 The following methods are added to all Series:
 
+- cut: put data into bins; shortcut to pd.cut
 - get_scaler: obtain a function that scales a series
 - ln: natural log
 - log: log base 10
@@ -93,6 +94,24 @@ def get_scalers(df: DataFrame, columns, **kwargs) -> Callable:
         columns = [columns]
     scalers = [df[col].get_scaler(**kwargs) for col in columns]
     return lambda df: reduce(lambda df, f: df.pipe(f), scalers, df)
+
+def cut(s: Series, **kwargs):
+    '''
+    Bin series values into discrete intervals.
+
+    Shortcut to pd.cut
+
+    >>> pd.Series(range(1, 7)).cut(bins=2)
+    0    (0.995, 3.5]
+    1    (0.995, 3.5]
+    2    (0.995, 3.5]
+    3      (3.5, 6.0]
+    4      (3.5, 6.0]
+    5      (3.5, 6.0]
+    dtype: category
+    Categories (2, interval[float64]): [(0.995, 3.5] < (3.5, 6.0]]
+    '''
+    return pd.cut(s, **kwargs)
 
 def get_scaler(s: Series, how='zscore'):
     '''
@@ -553,22 +572,23 @@ def chi2(df: DataFrame) -> Tuple[DataFrame, DataFrame]:
 def pipe(df: DataFrame, fn: Callable):
     return df.pipe(fn)
 
-pd.Series.zscore = zscore
-pd.Series.outliers = outliers
+pd.Series.cut = cut
 pd.Series.get_scaler = get_scaler
-pd.Series.log = log
-pd.Series.log2 = log2
 pd.Series.ln = ln
+pd.Series.log2 = log2
+pd.Series.log = log
+pd.Series.outliers = outliers
+pd.Series.zscore = zscore
 
+pd.DataFrame.chi2 = chi2
 pd.DataFrame.correlation_heatmap = correlation_heatmap
-pd.DataFrame.nnull = nnull
-pd.DataFrame.nna = nnull
+pd.DataFrame.crosstab = crosstab
 pd.DataFrame.drop_outliers = drop_outliers
 pd.DataFrame.get_scalers = get_scalers
 pd.DataFrame.__lshift__ = pipe
+pd.DataFrame.nna = nnull
+pd.DataFrame.nnull = nnull
 pd.DataFrame.__rshift__ = pipe
-pd.DataFrame.unnest = unnest_df
-pd.DataFrame.crosstab = crosstab
-pd.DataFrame.xtab = crosstab
 pd.DataFrame.ttest = ttest
-pd.DataFrame.chi2 = chi2
+pd.DataFrame.unnest = unnest_df
+pd.DataFrame.xtab = crosstab
