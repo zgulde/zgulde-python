@@ -110,6 +110,15 @@ def cut(s: Series, **kwargs):
     5      (3.5, 6.0]
     dtype: category
     Categories (2, interval[float64]): [(0.995, 3.5] < (3.5, 6.0]]
+    >>> pd.Series(range(1, 7)).cut(bins=[0, 3, 6])
+    0    (0, 3]
+    1    (0, 3]
+    2    (0, 3]
+    3    (3, 6]
+    4    (3, 6]
+    5    (3, 6]
+    dtype: category
+    Categories (2, interval[int64]): [(0, 3] < (3, 6]]
     '''
     return pd.cut(s, **kwargs)
 
