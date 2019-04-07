@@ -19,6 +19,7 @@ and the following are added to all DataFrames
 - get_scalers: obtain a function that scales multiple columns
 - nnull (nna): summarize the number of missing values
 - ttest: run a ttest for multiple categories
+- chi2: run chi square tests on all column combinations 
 - unnest: handle multiple values in a single cell 
 
 See the documentation for the individual methods for more details
@@ -36,9 +37,10 @@ from pandas import Series, DataFrame
 import seaborn as sns
 from matplotlib.pyplot import cm
 from matplotlib import pyplot as plt
-from typing import List, Callable
+from typing import List, Callable, Tuple
 import operator as op
 from functools import reduce
+import itertools as it
 from scipy.stats import ttest_ind, chi2_contingency
 
 def get_scalers(df: DataFrame, columns, **kwargs) -> Callable:
@@ -432,6 +434,7 @@ def crosstab(df: DataFrame, rows, cols, values=None, **kwargs) -> DataFrame:
     - values: (optional) name of the column to use for the cell values in the
               resulting contingency table. If supplied, aggfunc must be provided
               as well. See pd.crosstab for more details.
+    - **kwargs: any additional key word arguments to pass along to pd.crosstab
     
     Examples
     --------
@@ -505,8 +508,47 @@ def ttest(df: DataFrame, target: str) -> DataFrame:
         results.append(ttests)
     return pd.concat(results, axis=0).set_index(['variable', 'value'])
 
-def chi2(df: DataFrame, rows: str, cols: str, **kwargs):
-    return chi2_contingency(df.crosstab(rows, cols), **kwargs)
+def chi2(df: DataFrame) -> Tuple[DataFrame, DataFrame]:
+    '''
+    Performs a chi squared contingency table test between all the combinations
+    of two columns in the data frame.
+
+    Returns
+    -------
+
+    (pvals, chi2s)
+
+    A tuple with two data frames, each which have all of the columns from the
+    original data frame as both the indexes and the columns. The values in the
+    first are the p-values, the values in the second are the chi square test
+    statistics.
+
+    Examples
+    --------
+
+    >>> from seaborn import load_dataset
+    >>> tips = load_dataset('tips')
+    >>> p_vals, chi2s = tips[['smoker', 'time', 'day']].chi2()
+    >>> p_vals
+                 smoker        time          day
+    smoker          NaN    0.477149  1.05676e-05
+    time       0.477149         NaN   8.4499e-47
+    day     1.05676e-05  8.4499e-47          NaN
+    >>> chi2s
+              smoker      time      day
+    smoker       NaN  0.505373  25.7872
+    time    0.505373       NaN  217.113
+    day      25.7872   217.113      NaN
+    '''
+    p_vals = pd.DataFrame(index=df.columns, columns=df.columns)
+    chi2s = p_vals.copy()
+    for x1, x2 in it.combinations(df.columns, 2):
+        stat, p, *_ = chi2_contingency(df.xtab(x1, x2))
+        p_vals.loc[x1, x2] = p
+        p_vals.loc[x2, x1] = p
+        chi2s.loc[x1, x2] = stat
+        chi2s.loc[x2, x1] = stat
+    return p_vals, chi2s
 
 def pipe(df: DataFrame, fn: Callable):
     return df.pipe(fn)
