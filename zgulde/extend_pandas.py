@@ -150,7 +150,7 @@ def get_scalers(df: DataFrame, columns, **kwargs) -> Callable:
     scalers = [df[col].get_scaler(**kwargs) for col in columns]
     return lambda df: reduce(lambda df, f: df.pipe(f), scalers, df)
 
-def cut(s: Series, **kwargs):
+def cut(s: Series, bins, **kwargs):
     '''
     Bin series values into discrete intervals.
 
@@ -175,7 +175,7 @@ def cut(s: Series, **kwargs):
     dtype: category
     Categories (2, interval[int64]): [(0, 3] < (3, 6]]
     '''
-    return pd.cut(s, **kwargs)
+    return pd.cut(s, bins, **kwargs)
 
 def get_scaler(s: Series, how='zscore'):
     '''
