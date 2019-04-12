@@ -58,7 +58,7 @@ from matplotlib.pyplot import cm
 from matplotlib import pyplot as plt
 from typing import List, Callable, Tuple
 import operator as op
-from functools import reduce
+from functools import reduce, partial
 import itertools as it
 from scipy.stats import ttest_ind, chi2_contingency
 import re
@@ -143,11 +143,10 @@ def get_scalers(df: DataFrame, columns, **kwargs) -> Callable:
     2 -0.244949  0.439658
     3  1.469694  0.615521
     '''
-    # allow either a single string or a list of strings
-    if type(columns) is str:
+    if type(columns) is str: # allow either a single string or a list of strings
         columns = [columns]
     scalers = [df[col].get_scaler(**kwargs) for col in columns]
-    return lambda df: reduce(lambda df, f: df.pipe(f), scalers, df)
+    return partial(reduce, lambda df, f: df.pipe(f), scalers)
 
 def cut(s: Series, bins, **kwargs):
     '''
