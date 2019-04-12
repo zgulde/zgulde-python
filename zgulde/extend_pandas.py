@@ -323,6 +323,44 @@ def drop_outliers(df: DataFrame, *cols: List[str], **kwargs) -> Series:
     to_keep = [~ df[col].outliers(**kwargs) for col in cols]
     return df[list(reduce(op.and_, to_keep))]
 
+
+def n_outliers(df: DataFrame, **kwargs) -> Series:
+    '''
+    Provide a summary of the number of outliers in each numeric column.
+
+    Parameters
+    ----------
+
+    - **kwargs: any additional arguments to pass along to Series.outliers
+
+    Example
+    -------
+
+    >>> x = [1, 2, 3, 4, 5, 1, 2, 3, 4, 5]
+    >>> y = [1, 2, 3, 4, 5, 100, 2, 3, 4, 5]
+    >>> z = [1, 2, 3, 4, 5, -100, 2, 3, 100, 5]
+    >>> df = pd.DataFrame(dict(x=x, y=y, z=z))
+    >>> df
+       x    y    z
+    0  1    1    1
+    1  2    2    2
+    2  3    3    3
+    3  4    4    4
+    4  5    5    5
+    5  1  100 -100
+    6  2    2    2
+    7  3    3    3
+    8  4    4  100
+    9  5    5    5
+    >>> df.n_outliers()
+    x    0
+    y    1
+    z    2
+    dtype: int64
+    '''
+    return df.select_dtypes('number').apply(lambda s: s.outliers(**kwargs).sum())
+
+
 def outliers(s: Series, how='iqr', k=1.5, std_cutoff=2) -> Series:
     '''
     Detect outliers in the series.
@@ -652,6 +690,7 @@ pd.DataFrame.crosstab = crosstab
 pd.DataFrame.drop_outliers = drop_outliers
 pd.DataFrame.get_scalers = get_scalers
 pd.DataFrame.__lshift__ = pipe
+pd.DataFrame.n_outliers = n_outliers
 pd.DataFrame.nna = nnull
 pd.DataFrame.nnull = nnull
 pd.DataFrame.__rshift__ = pipe
