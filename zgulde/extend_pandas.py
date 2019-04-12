@@ -50,8 +50,6 @@ See the documentation for the individual methods for more details and examples
 (e.g. ``help(pd.Series.outliers)``)
 '''
 
-# More general summary function
-
 import numpy as np
 import pandas as pd
 from pandas import Series, DataFrame
@@ -372,8 +370,8 @@ def outliers(s: Series, how='iqr', k=1.5, std_cutoff=2) -> Series:
     how : {'iqr', 'std'}, default 'iqr'
         - 'iqr' : identify outliers based on whether they are > q3 + k * iqr
           or < q1 - k * iqr
-        - 'std' : identify outliers based on whether they are further than 2
-          standard deviations from the mean
+        - 'std' : identify outliers based on whether they are further than a
+                  specified number of standard deviations from the mean
     k : value to multiply the iqr by for outlier detection. Ignored when
         how='std'. Default 1.5
     std_cutoff : cutoff for identifying an outlier based on standard deviation.
