@@ -18,6 +18,7 @@ and the following are added to all DataFrames
 - crosstab (xtab): shortcut to pd.crosstab
 - drop_outliers: remove outliers
 - get_scalers: obtain a function that scales multiple columns
+- n_outliers: summarize the number of outliers in each numeric column
 - nnull (nna): summarize the number of missing values
 - ttest: run a ttest for multiple categories
 - chi2: run chi square tests on all column combinations 
