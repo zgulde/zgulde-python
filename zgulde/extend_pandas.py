@@ -80,8 +80,8 @@ def cleanup_column_names(df: DataFrame, inplace=False) -> DataFrame:
     - inplace : Whether or not to modify the data frame in-place and return
                 None.
 
-    Examples
-    --------
+    Example
+    -------
 
     >>> df = pd.DataFrame({'*Feature& A': [1, 2], ' feature.b  ': [2, 3], 'FEATURE-C': [3, 4]})
     >>> df
@@ -324,8 +324,9 @@ def drop_outliers(df: DataFrame, cols: Union[str, List[str]], **kwargs) -> Serie
     kwargs : additional key-word arguments passed on to
              ``pandas.Series.outliers``
 
-    Examples
-    --------
+    Example
+    -------
+
     >>> df = pd.DataFrame(dict(x=[1, 2, 3, 4, 5, 1000], y=[1000, 2, 3, 4, 5, 6]))
     >>> df
           x     y
@@ -423,8 +424,8 @@ def outliers(s: Series, how='iqr', k=1.5, std_cutoff=2) -> Series:
     std_cutoff : cutoff for identifying an outlier based on standard deviation.
                  Ignored when how='iqr'. Default 2
 
-    Examples
-    --------
+    Example
+    -------
 
     >>> x = pd.Series([1, 2, 3, 4, 5, 6, 100])
     >>> x.outliers()
@@ -452,8 +453,8 @@ def nnull(df: DataFrame) -> DataFrame:
 
     alias of nna
 
-    Examples
-    --------
+    Example
+    -------
 
     >>> df = pd.DataFrame(dict(x=[1, 2, np.nan], y=[4, np.nan, np.nan]))
     >>> df
@@ -486,8 +487,8 @@ def unnest(df: DataFrame, col: str, split=True, sep=',', reset_index=True) -> Da
                     data frame. If False, the resulting data frame will have an
                     index that could contain duplicates.
 
-    Examples
-    --------
+    Example
+    -------
 
     >>> df = pd.DataFrame(dict(x=list('abc'), y=['a,b,c', 'd,e', 'f']))    
     >>> df
@@ -566,6 +567,10 @@ def log(s: Series):
 def ln(s: Series):
     '''
     Returns the natural log of the values in the series using np.log
+
+    Example
+    -------
+
     >>> x = pd.Series([1, np.e, np.e ** 2, np.e ** 3])
     >>> x
     0     1.000000
@@ -624,8 +629,8 @@ def crosstab(df: DataFrame, rows, cols, values=None, **kwargs) -> DataFrame:
     - kwargs : any additional key word arguments to pass along to
                ``pd.crosstab``
     
-    Examples
-    --------
+    Example
+    -------
 
     >>> df = pd.DataFrame(dict(x=list('aaabbb'), y=list('cdcdcd'), z=range(6)))
     >>> df
@@ -674,8 +679,8 @@ def ttest(df: DataFrame, target: str) -> DataFrame:
 
     - target : name of the column that holds the target (continuous) variable
 
-    Examples
-    --------
+    Example
+    -------
 
     >>> from seaborn import load_dataset
     >>> tips = load_dataset('tips')
@@ -716,8 +721,8 @@ def chi2(df: DataFrame) -> Tuple[DataFrame, DataFrame]:
     first are the p-values, the values in the second are the chi square test
     statistics.
 
-    Examples
-    --------
+    Example
+    -------
 
     >>> from seaborn import load_dataset
     >>> tips = load_dataset('tips')
