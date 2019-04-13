@@ -2,30 +2,32 @@
 This module adds functionality to pandas Series and DataFrame objects. The
 objects in pandas will be modified by simply importing this module.
 
+>>> import zgulde.extend_pandas
+
 The following methods are added to all Series:
 
 - `cut`_ (bin): put data into bins; shortcut to pd.cut
 - `get_scaler`_: obtain a function that scales a series
 - `ln`_: natural log
-- `log`_: log base 10
 - `log2`_: log base 2
+- `log`_: log base 10
 - `outliers`_: detect outliers
 - `zscore`_: obtain the z-score for every value
 
-and the following are added to all DataFrames
+and the following are added to all DataFrames:
 
+- `chi2`_: run chi square tests on all column combinations 
 - `correlation_heatmap`_: plot a heatmap of the correlations
 - `crosstab`_ (xtab): shortcut to pd.crosstab
 - `drop_outliers`_: remove outliers
 - `get_scalers`_: obtain a function that scales multiple columns
-- `n_outliers`_: summarize the number of outliers in each numeric column
 - `nnull`_ (nna): summarize the number of missing values
-- `ttest`_: run a ttest for multiple categories
-- `chi2`_: run chi square tests on all column combinations 
+- `n_outliers`_: summarize the number of outliers in each numeric column
+- `ttest`_: run multiple 2 sample t-tests for multiple categories
 - `unnest`_: handle multiple values in a single cell 
 
-It also defines the left and right shift operators to be the same thing as
-`.pipe` like this:
+It also defines the left and right shift operators to be similar to
+``pandas.DataFrame.pipe``. For example:
 
 >>> import pandas as pd
 >>> import numpy as np
@@ -43,6 +45,7 @@ It also defines the left and right shift operators to be the same thing as
 1  1  2
 2  2  3
 3  3  4
+>>> # This gives the same results as .pipe
 >>> ((df >> create_y) == df.pipe(create_y)).all(axis=None)
 True
 '''
@@ -53,7 +56,7 @@ from pandas import Series, DataFrame
 import seaborn as sns
 from matplotlib.pyplot import cm
 from matplotlib import pyplot as plt
-from typing import List, Callable, Tuple
+from typing import List, Callable, Tuple, Union
 import operator as op
 from functools import reduce, partial
 import itertools as it
@@ -70,6 +73,12 @@ def cleanup_column_names(df: DataFrame, inplace=False) -> DataFrame:
     '''
     Returns a data frame with the column names cleaned up. Special characters
     are removed and spaces, dots, and dashes are replaced with underscores.
+
+    Parameters
+    ----------
+
+    - inplace : Whether or not to modify the data frame in-place and return
+                None.
 
     Examples
     --------
@@ -88,7 +97,7 @@ def cleanup_column_names(df: DataFrame, inplace=False) -> DataFrame:
     0            1             2          3
     1            2             3          4
     >>> df.cleanup_column_names(inplace=True)
-    >>> df.cleanup_column_names()
+    >>> df
        feature_a  feature_b  feature_c
     0          1          2          3
     1          2          3          4
@@ -113,7 +122,7 @@ def get_scalers(df: DataFrame, columns, **kwargs) -> Callable:
     - columns : Either a single string, or a list of strings where each string
                 is a column name to scale
     - kwargs : any additional arguments are passed to Series.get_scaler for each
-      column specified
+               column specified
 
     Example
     -------
@@ -139,19 +148,43 @@ def get_scalers(df: DataFrame, columns, **kwargs) -> Callable:
     1 -0.489898  0.439658
     2 -0.244949  0.439658
     3  1.469694  0.615521
+    >>> df.pipe(scale_x_and_y)
+              x         y
+    0 -0.734847 -1.494836
+    1 -0.489898  0.439658
+    2 -0.244949  0.439658
+    3  1.469694  0.615521
     '''
     if type(columns) is str: # allow either a single string or a list of strings
         columns = [columns]
     scalers = [df[col].get_scaler(**kwargs) for col in columns]
     return partial(reduce, lambda df, f: df.pipe(f), scalers)
 
-def cut(s: Series, bins, **kwargs):
+def cut(s: Series, *args, **kwargs):
     '''
     Bin series values into discrete intervals.
 
     Shortcut to pd.cut
 
-    >>> pd.Series(range(1, 7)).cut(bins=2)
+    Parameters
+    ----------
+
+    - args : positional arguments passed to ``pandas.cut``
+    - keyword : keyword arguments passed to ``pandas.cut``
+
+    Example
+    -------
+
+    >>> x = pd.Series(range(1, 7))
+    >>> x
+    0    1
+    1    2
+    2    3
+    3    4
+    4    5
+    5    6
+    dtype: int64
+    >>> x.cut(2)
     0    (0.995, 3.5]
     1    (0.995, 3.5]
     2    (0.995, 3.5]
@@ -160,7 +193,7 @@ def cut(s: Series, bins, **kwargs):
     5      (3.5, 6.0]
     dtype: category
     Categories (2, interval[float64]): [(0.995, 3.5] < (3.5, 6.0]]
-    >>> pd.Series(range(1, 7)).cut(bins=[0, 3, 6])
+    >>> x.cut(bins=[0, 3, 6])
     0    (0, 3]
     1    (0, 3]
     2    (0, 3]
@@ -170,7 +203,7 @@ def cut(s: Series, bins, **kwargs):
     dtype: category
     Categories (2, interval[int64]): [(0, 3] < (3, 6]]
     '''
-    return pd.cut(s, bins, **kwargs)
+    return pd.cut(s, *args, **kwargs)
 
 def get_scaler(s: Series, how='zscore'):
     '''
@@ -189,7 +222,7 @@ def get_scaler(s: Series, how='zscore'):
     ----------
 
     - how : One of {'zscore', 'minmax'} to either apply z-score or min-max
-      normalization
+            scaling
 
     Example
     -------
@@ -276,12 +309,20 @@ def zscore(s: Series) -> Series:
     '''
     return (s - s.mean()) / s.std()
 
-def drop_outliers(df: DataFrame, *cols: List[str], **kwargs) -> Series:
+def drop_outliers(df: DataFrame, cols: Union[str, List[str]], **kwargs) -> Series:
     '''
     Drop rows with outliers in the given columns from the dataframe
 
     See the docs for .outliers for more details on parameters, and to customize
     how the outliers are detected.
+
+    Parameters
+    ----------
+
+    cols : either a string or a list of strings of which column(s) to drop the
+           outliers in
+    kwargs : additional key-word arguments passed on to
+             ``pandas.Series.outliers``
 
     Examples
     --------
@@ -308,13 +349,15 @@ def drop_outliers(df: DataFrame, *cols: List[str], **kwargs) -> Series:
     3     4  4
     4     5  5
     5  1000  6
-    >>> df.drop_outliers('x', 'y')
+    >>> df.drop_outliers(['x', 'y'])
        x  y
     1  2  2
     2  3  3
     3  4  4
     4  5  5
     '''
+    if type(cols) is str:
+        cols = [cols]
     to_keep = [~ df[col].outliers(**kwargs) for col in cols]
     return df[list(reduce(op.and_, to_keep))]
 
@@ -326,7 +369,14 @@ def n_outliers(df: DataFrame, **kwargs) -> Series:
     Parameters
     ----------
 
-    - kwargs: any additional arguments to pass along to Series.outliers
+    - kwargs : any additional arguments to pass along to
+               ``pandas.Series.outliers``
+
+    Returns
+    -------
+
+    A ``pandas.Series`` indexed by the column names of the the data frame, where
+    the values represent the number of outliers in that column.
 
     Example
     -------
@@ -428,13 +478,13 @@ def unnest(df: DataFrame, col: str, split=True, sep=',', reset_index=True) -> Da
     Parameters
     ----------
 
-    - col: name of the column to unnest
-    - split: default True. whether or not to split the data in the column. Set
-             this to False if the column already contains lists in each row
-    - sep: separator to split on. Ignored if split=False
-    - reset_index: default True. whether to reset the index in the resulting
-                   data frame. If False, the resulting data frame will have an
-                   index that could contain duplicates.
+    - col : name of the column to unnest
+    - split : default True. whether or not to split the data in the column. Set
+              this to False if the column already contains lists in each row
+    - sep : separator to split on. Ignored if split=False
+    - reset_index : default True. whether to reset the index in the resulting
+                    data frame. If False, the resulting data frame will have an
+                    index that could contain duplicates.
 
     Examples
     --------
@@ -468,7 +518,7 @@ def correlation_heatmap(df: DataFrame, fancy=False, **kwargs):
     '''
     Plot a heatmap of the correlation matrix for the data frame.
 
-    Any additional kwargs are passed to sns.heatmap
+    Any additional kwargs are passed to ``seaborn.heatmap``
     '''
     if not fancy:
         return sns.heatmap(df.corr(), cmap=cm.PiYG, center=0, annot=True, **kwargs)
@@ -488,7 +538,7 @@ def correlation_heatmap(df: DataFrame, fancy=False, **kwargs):
     sns.heatmap(cmat, mask=mask, cbar=True, annot=True, square=True, fmt='.2f',
                 annot_kws={'size': 10}, **kwargs)
     plt.yticks(rotation=0)
-    plt.show()
+    return plt
 
 def log(s: Series):
     '''
@@ -497,7 +547,14 @@ def log(s: Series):
     Example
     -------
 
-    >>> pd.Series([1, 10, 100, 1000]).log()
+    >>> x = pd.Series([1, 10, 100, 1000])
+    >>> x
+    0       1
+    1      10
+    2     100
+    3    1000
+    dtype: int64
+    >>> x.log()
     0    0.0
     1    1.0
     2    2.0
@@ -509,8 +566,14 @@ def log(s: Series):
 def ln(s: Series):
     '''
     Returns the natural log of the values in the series using np.log
-
-    >>> pd.Series([1, np.e, np.e ** 2, np.e ** 3]).ln()
+    >>> x = pd.Series([1, np.e, np.e ** 2, np.e ** 3])
+    >>> x
+    0     1.000000
+    1     2.718282
+    2     7.389056
+    3    20.085537
+    dtype: float64
+    >>> x.ln()
     0    0.0
     1    1.0
     2    2.0
@@ -526,7 +589,15 @@ def log2(s: Series):
     Example
     -------
 
-    >>> pd.Series([1, 2,4, 8, 16]).log2()
+    >>> x = pd.Series([1, 2,4, 8, 16])
+    >>> x
+    0     1
+    1     2
+    2     4
+    3     8
+    4    16
+    dtype: int64
+    >>> x.log2()
     0    0.0
     1    1.0
     2    2.0
@@ -543,14 +614,15 @@ def crosstab(df: DataFrame, rows, cols, values=None, **kwargs) -> DataFrame:
     Parameters
     ----------
 
-    - rows: the name of the columns that will make up the rows in resulting
-            contingency table
-    - cols: the name of the columns that will make up the columns in resulting
-            contingency table
-    - values: (optional) name of the column to use for the cell values in the
-              resulting contingency table. If supplied, aggfunc must be provided
-              as well. See pd.crosstab for more details.
-    - kwargs: any additional key word arguments to pass along to pd.crosstab
+    - rows : the name of the columns that will make up the rows in resulting
+             contingency table
+    - cols : the name of the columns that will make up the columns in resulting
+             contingency table
+    - values : (optional) name of the column to use for the cell values in the
+               resulting contingency table. If supplied, aggfunc must be
+               provided as well. See ``pd.crosstab`` for more details.
+    - kwargs : any additional key word arguments to pass along to
+               ``pd.crosstab``
     
     Examples
     --------
@@ -589,13 +661,18 @@ def crosstab(df: DataFrame, rows, cols, values=None, **kwargs) -> DataFrame:
 
 def ttest(df: DataFrame, target: str) -> DataFrame:
     '''
-    Runs ttests for target for every unique value from every column in the data
-    frame.
+    Runs a 2 sample t-test comparing the specified target variable for every
+    unique value from every other column in the data frame.
 
     The resulting t-statistic and pvalue are based on subdividing the data for
     each unique value for each column, with each individual value indicating
     that the test was performed based on belonging to that unique value vs not
     belonging to that group.
+
+    Parameters
+    ----------
+
+    - target : name of the column that holds the target (continuous) variable
 
     Examples
     --------
