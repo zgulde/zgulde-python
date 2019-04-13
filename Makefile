@@ -17,4 +17,4 @@ docs: ## Build the docs for extend_pandas
 		> index.html
 
 help: ## Show this help message
-	@grep -E '^[a-zA-Z._-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[34m%s\033[0m\t%s\n", $$1, $$2}' | column -ts$$'\t'
+	@grep -E '^[a-zA-Z._-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%s\033[0m\t%s\n", $$1, $$2}' | column -ts$$'\t'
