@@ -4,25 +4,25 @@ objects in pandas will be modified by simply importing this module.
 
 The following methods are added to all Series:
 
-- cut (bin): put data into bins; shortcut to pd.cut
-- get_scaler: obtain a function that scales a series
-- ln: natural log
-- log: log base 10
-- log2: log base 2
-- outliers: detect outliers
-- zscore: obtain the z-score for every value
+- `cut`_ (bin): put data into bins; shortcut to pd.cut
+- `get_scaler`_: obtain a function that scales a series
+- `ln`_: natural log
+- `log`_: log base 10
+- `log2`_: log base 2
+- `outliers`_: detect outliers
+- `zscore`_: obtain the z-score for every value
 
 and the following are added to all DataFrames
 
-- correlation_heatmap: plot a heatmap of the correlations
-- crosstab (xtab): shortcut to pd.crosstab
-- drop_outliers: remove outliers
-- get_scalers: obtain a function that scales multiple columns
-- n_outliers: summarize the number of outliers in each numeric column
-- nnull (nna): summarize the number of missing values
-- ttest: run a ttest for multiple categories
-- chi2: run chi square tests on all column combinations 
-- unnest: handle multiple values in a single cell 
+- `correlation_heatmap`_: plot a heatmap of the correlations
+- `crosstab`_ (xtab): shortcut to pd.crosstab
+- `drop_outliers`_: remove outliers
+- `get_scalers`_: obtain a function that scales multiple columns
+- `n_outliers`_: summarize the number of outliers in each numeric column
+- `nnull`_ (nna): summarize the number of missing values
+- `ttest`_: run a ttest for multiple categories
+- `chi2`_: run chi square tests on all column combinations 
+- `unnest`_: handle multiple values in a single cell 
 
 It also defines the left and right shift operators to be the same thing as
 `.pipe` like this:
@@ -45,9 +45,6 @@ It also defines the left and right shift operators to be the same thing as
 3  3  4
 >>> ((df >> create_y) == df.pipe(create_y)).all(axis=None)
 True
-
-See the documentation for the individual methods for more details and examples
-(e.g. ``help(pd.Series.outliers)``)
 '''
 
 import numpy as np
@@ -329,7 +326,7 @@ def n_outliers(df: DataFrame, **kwargs) -> Series:
     Parameters
     ----------
 
-    - **kwargs: any additional arguments to pass along to Series.outliers
+    - kwargs: any additional arguments to pass along to Series.outliers
 
     Example
     -------
@@ -423,7 +420,7 @@ def nnull(df: DataFrame) -> DataFrame:
     p_missing = n_missing / df.shape[0]
     return pd.DataFrame(dict(n_missing=n_missing, p_missing=p_missing))
 
-def unnest_df(df: DataFrame, col: str, split=True, sep=',', reset_index=True) -> DataFrame:
+def unnest(df: DataFrame, col: str, split=True, sep=',', reset_index=True) -> DataFrame:
     '''
     Turns a column with multiple values in each row in it into separate rows,
     each with a single value.
@@ -553,7 +550,7 @@ def crosstab(df: DataFrame, rows, cols, values=None, **kwargs) -> DataFrame:
     - values: (optional) name of the column to use for the cell values in the
               resulting contingency table. If supplied, aggfunc must be provided
               as well. See pd.crosstab for more details.
-    - **kwargs: any additional key word arguments to pass along to pd.crosstab
+    - kwargs: any additional key word arguments to pass along to pd.crosstab
     
     Examples
     --------
@@ -693,5 +690,28 @@ pd.DataFrame.nna = nnull
 pd.DataFrame.nnull = nnull
 pd.DataFrame.__rshift__ = pipe
 pd.DataFrame.ttest = ttest
-pd.DataFrame.unnest = unnest_df
+pd.DataFrame.unnest = unnest
 pd.DataFrame.xtab = crosstab
+
+series_extensions = [
+    cut,
+    get_scaler,
+    ln,
+    log,
+    log2,
+    outliers,
+    zscore,
+]
+
+data_frame_extensions = [
+    chi2,
+    cleanup_column_names,
+    correlation_heatmap,
+    crosstab,
+    drop_outliers,
+    get_scalers,
+    nnull,
+    n_outliers,
+    ttest,
+    unnest,
+]
