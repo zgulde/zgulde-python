@@ -8,6 +8,8 @@
 <script>
 for (let h2 of document.querySelectorAll('h2')) {
     h2.id = h2.innerText
+    h2.style.color = 'black'
+    h2.innerHTML = `<a href="#${h2.id}">${h2.innerHTML}</a>`
 }
 </script>
 %(body_suffix)s
