@@ -1,4 +1,4 @@
-.PHONY: default docs release clean help
+.PHONY: default docs release clean help test
 
 default: help
 
@@ -15,6 +15,9 @@ docs: ## Build the docs for extend_pandas
 		rst2html.py --stylesheet-path=doc/style.css \
 		--template=doc/template.txt \
 		> index.html
+
+test: ## Run the tests for zgulde/extend_pandas
+	python -m doctest zgulde/extend_pandas.py
 
 help: ## Show this help message
 	@grep -E '^[a-zA-Z._-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%s\033[0m\t%s\n", $$1, $$2}' | column -ts$$'\t'
