@@ -21,7 +21,8 @@ import zgulde.extend_pandas
 # now you can use all the additional methods
 ```
 
-Further documentation:
+[Further documentation can be found here](https://zach.lol/extend_pandas), or by
+looking at the built-in help:
 
 ```python
 import zgulde.extend_pandas
