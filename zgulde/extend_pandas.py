@@ -21,6 +21,7 @@ and the following are added to all DataFrames:
 - `crosstab`_ (xtab): shortcut to pd.crosstab
 - `drop_outliers`_: remove outliers
 - `get_scalers`_: obtain a function that scales multiple columns
+- `hdtl`_: look at the head and tail of the data frame
 - `nnull`_ (nna): summarize the number of missing values
 - `n_outliers`_: summarize the number of outliers in each numeric column
 - `ttest`_: run multiple 2 sample t-tests for multiple categories
@@ -541,6 +542,46 @@ def correlation_heatmap(df: DataFrame, fancy=False, **kwargs):
     plt.yticks(rotation=0)
     return plt
 
+def hdtl(df: DataFrame, n=3) -> DataFrame:
+    '''
+    Return the head and the tail of the data frame.
+
+    Parameters
+    ----------
+
+    - n : number of rows to get from both the head and tail
+
+    Example
+    -------
+
+    >>> df = pd.DataFrame(dict(x=np.arange(10), y=np.arange(10)))
+    >>> df
+       x  y
+    0  0  0
+    1  1  1
+    2  2  2
+    3  3  3
+    4  4  4
+    5  5  5
+    6  6  6
+    7  7  7
+    8  8  8
+    9  9  9
+    >>> df.hdtl(1)
+       x  y
+    0  0  0
+    9  9  9
+    >>> df.hdtl()
+       x  y
+    0  0  0
+    1  1  1
+    2  2  2
+    7  7  7
+    8  8  8
+    9  9  9
+    '''
+    return pd.concat([df.head(n), df.tail(n)])
+
 def log(s: Series):
     '''
     Returns the log base 10 of the values in the series using np.log10
@@ -766,6 +807,7 @@ pd.DataFrame.correlation_heatmap = correlation_heatmap
 pd.DataFrame.crosstab = crosstab
 pd.DataFrame.drop_outliers = drop_outliers
 pd.DataFrame.get_scalers = get_scalers
+pd.DataFrame.hdtl = hdtl
 pd.DataFrame.__lshift__ = pipe
 pd.DataFrame.n_outliers = n_outliers
 pd.DataFrame.nna = nnull
@@ -792,6 +834,7 @@ data_frame_extensions = [
     crosstab,
     drop_outliers,
     get_scalers,
+    hdtl,
     nnull,
     n_outliers,
     ttest,
