@@ -4,3 +4,4 @@ build/
 zgulde.egg-info/
 __pycache__
 index.html
+public

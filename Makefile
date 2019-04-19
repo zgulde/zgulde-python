@@ -3,7 +3,7 @@
 default: help
 
 clean: ## Remove built docs and packaging artifacts
-	rm -rf dist build zgulde.egg-info
+	rm -rf dist build zgulde.egg-info public
 	rm -f index.html
 
 release: clean test docs ## Release a new version to pypi
@@ -12,10 +12,15 @@ release: clean test docs ## Release a new version to pypi
 	myserver upload --file index.html --destination /srv/zach.lol/public/extend_pandas.html
 
 docs: ## Build the docs for extend_pandas
+	mkdir -p public
 	PYTHONPATH=. python doc/gen_extend_pandas_docs.py |\
 		rst2html.py --stylesheet-path=doc/style.css \
 		--template=doc/template.txt \
-		> index.html
+		> public/index.html
+
+gh-pages: ## Build docs for github-pages branch
+	@echo 'Not Implemented'
+	false
 
 test: ## Run the tests for zgulde/extend_pandas
 	python -m doctest zgulde/extend_pandas.py
