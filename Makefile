@@ -17,7 +17,7 @@ docs: ## Build the docs for extend_pandas
 		--template=doc/template.txt \
 		> public/index.html
 
-gh-pages: clean ## Build, commit, and push docs for the github-pages branch
+gh-pages: clean ## Build, commit, and push docs for the gh-pages branch
 	mkdir -p public
 	@if [[ ! -f .git/refs/heads/gh-pages ]] ; then \
 		@echo '[make] Creating gh-pages branch';\
@@ -37,3 +37,5 @@ gh-pages: clean ## Build, commit, and push docs for the github-pages branch
 test: ## Run the tests for zgulde/extend_pandas
 	python -m doctest zgulde/extend_pandas.py
 
+help: ## Show this help message
+	@grep -E '^[a-zA-Z._-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%s\033[0m\t%s\n", $$1, $$2}' | column -ts$$'\t'
