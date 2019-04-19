@@ -1,4 +1,4 @@
-.PHONY: default docs release clean help test
+.PHONY: default docs release clean help test gh-pages
 
 default: help
 
@@ -18,12 +18,23 @@ docs: ## Build the docs for extend_pandas
 		--template=doc/template.txt \
 		> public/index.html
 
-gh-pages: ## Build docs for github-pages branch
-	@echo 'Not Implemented'
-	false
+gh-pages: clean ## Build, commit, and push docs for the github-pages branch
+	mkdir -p public
+	@if [[ ! -f .git/refs/heads/gh-pages ]] ; then \
+		@echo '[make] Creating gh-pages branch';\
+		git --work-tree public checkout -q --orphan gh-pages;\
+		touch public/index.html;\
+		git --work-tree public add --all;\
+		git --work-tree public commit --quiet --message 'Update Docs';\
+		git checkout --quiet --force master;\
+	fi
+	git --work-tree public checkout gh-pages
+	make docs
+	git --work-tree public add -A
+	git --work-tree public commit --amend --no-edit
+	git checkout --force master
+	git push origin gh-pages --force
 
 test: ## Run the tests for zgulde/extend_pandas
 	python -m doctest zgulde/extend_pandas.py
 
-help: ## Show this help message
-	@grep -E '^[a-zA-Z._-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%s\033[0m\t%s\n", $$1, $$2}' | column -ts$$'\t'
