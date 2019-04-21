@@ -24,6 +24,7 @@ and the following are added to all DataFrames:
 - `hdtl`_: look at the head and tail of the data frame
 - `nnull`_ (nna): summarize the number of missing values
 - `n_outliers`_: summarize the number of outliers in each numeric column
+- `ttest`_: run multiple 1 sample t-tests for multiple categories
 - `ttest_2samp`_: run multiple 2 sample t-tests for multiple categories
 - `unnest`_: handle multiple values in a single cell 
 
