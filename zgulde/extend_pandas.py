@@ -24,7 +24,7 @@ and the following are added to all DataFrames:
 - `hdtl`_: look at the head and tail of the data frame
 - `nnull`_ (nna): summarize the number of missing values
 - `n_outliers`_: summarize the number of outliers in each numeric column
-- `ttest`_: run multiple 2 sample t-tests for multiple categories
+- `ttest_2samp`_: run multiple 2 sample t-tests for multiple categories
 - `unnest`_: handle multiple values in a single cell 
 
 It also defines the left and right shift operators to be similar to
@@ -61,7 +61,7 @@ from typing import List, Callable, Tuple, Union
 import operator as op
 from functools import reduce, partial
 import itertools as it
-from scipy.stats import ttest_ind, chi2_contingency
+from scipy.stats import ttest_ind, chi2_contingency, ttest_1samp
 import re
 
 column_name_re = re.compile(r'[^a-zA-Z_0-9]')
@@ -707,6 +707,43 @@ def crosstab(df: DataFrame, rows, cols, values=None, **kwargs) -> DataFrame:
 
 def ttest(df: DataFrame, target: str) -> DataFrame:
     '''
+    Runs a 1 sample t-test comparing the specified target variable to the
+    overall mean among all of the possible subgroups.
+
+    Parameters
+    ----------
+
+    - target : name of the column that holds the target (continuous) variable
+
+    Example
+    -------
+
+    >>> from seaborn import load_dataset
+    >>> tips = load_dataset('tips')
+    >>> tips = tips[['total_bill', 'day', 'time']]
+    >>> tips.ttest('total_bill')
+                     statistic    pvalue    n
+    variable value                           
+    day      Sun      1.603035  0.113130   76
+             Sat      0.644856  0.520737   87
+             Thur    -2.099957  0.039876   62
+             Fri     -1.383042  0.183569   19
+    time     Dinner   1.467432  0.144054  176
+             Lunch   -2.797882  0.006710   68
+    '''
+    results = []
+    for col in df.drop(columns=target):
+        unique_vals = df[col].unique()
+        ttests = DataFrame([ttest_1samp(df[df[col] == v][target],
+                                        df[target].mean()) 
+                            for v in unique_vals])
+        ns = [df[df[col] == v].shape[0] for v in unique_vals]
+        ttests = ttests.assign(n=ns, value=unique_vals, variable=col)
+        results.append(ttests)
+    return pd.concat(results, axis=0).set_index(['variable', 'value'])
+
+def ttest_2samp(df: DataFrame, target: str) -> DataFrame:
+    '''
     Runs a 2 sample t-test comparing the specified target variable for every
     unique value from every other column in the data frame.
 
@@ -726,7 +763,7 @@ def ttest(df: DataFrame, target: str) -> DataFrame:
     >>> from seaborn import load_dataset
     >>> tips = load_dataset('tips')
     >>> tips = tips[['total_bill', 'day', 'time']]
-    >>> tips.ttest('total_bill')
+    >>> tips.ttest_2samp('total_bill')
                      statistic    pvalue    n
     variable value                           
     day      Sun      1.927317  0.055111   76
@@ -813,6 +850,7 @@ pd.DataFrame.n_outliers = n_outliers
 pd.DataFrame.nna = nnull
 pd.DataFrame.nnull = nnull
 pd.DataFrame.__rshift__ = pipe
+pd.DataFrame.ttest_2samp = ttest_2samp
 pd.DataFrame.ttest = ttest
 pd.DataFrame.unnest = unnest
 pd.DataFrame.xtab = crosstab
@@ -838,5 +876,6 @@ data_frame_extensions = [
     nnull,
     n_outliers,
     ttest,
+    ttest_2samp,
     unnest,
 ]
