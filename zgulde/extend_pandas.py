@@ -413,6 +413,12 @@ def outliers(s: Series, how='iqr', k=1.5, std_cutoff=2) -> Series:
     '''
     Detect outliers in the series.
 
+    Returns
+    -------
+
+    A pandas Series of boolean values indicating whether each point is an
+    outlier or not.
+
     Parameters
     ----------
 
@@ -429,8 +435,18 @@ def outliers(s: Series, how='iqr', k=1.5, std_cutoff=2) -> Series:
     Example
     -------
 
-    >>> x = pd.Series([1, 2, 3, 4, 5, 6, 100])
-    >>> x.outliers()
+    >>> df = pd.DataFrame(dict(x=[1, 2, 3, 4, 5, 6, 100],
+    ...                        y=[-100, 5, 3, 4, 1, 2, 0]))
+    >>> df
+         x    y
+    0    1 -100
+    1    2    5
+    2    3    3
+    3    4    4
+    4    5    1
+    5    6    2
+    6  100    0
+    >>> df.x.outliers()
     0    False
     1    False
     2    False
@@ -438,7 +454,10 @@ def outliers(s: Series, how='iqr', k=1.5, std_cutoff=2) -> Series:
     4    False
     5    False
     6     True
-    dtype: bool
+    Name: x, dtype: bool
+    >>> df[df.x.outliers()]
+         x  y
+    6  100  0
     '''
     if how == 'iqr':
         q1 = s.quantile(0.25)
