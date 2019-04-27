@@ -1,4 +1,5 @@
 import pandas as pd
+from pydataset import data
 
 # better interaction w/ sklearn.metrics.confusion_matrix, e.g. auto labelling
 def better_confusion_matrix(actual, predicted, labels=None):
@@ -16,3 +17,10 @@ def labelled_confusion_matrix():
     return pd.DataFrame(matrix,
                         columns=['Predicted +', 'Predicted -', ''],
                         index=['Actual +', 'Actual -', ''])
+
+def datasets():
+    datasets = data()
+    shapes = datasets.apply(lambda row: data(row.dataset_id).shape, axis=1)\
+                     .apply(pd.Series)\
+                     .rename({0: 'nrows', 1: 'ncols'}, axis=1)
+    return pd.concat([datasets, shapes], axis=1)
