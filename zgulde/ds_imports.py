@@ -17,6 +17,7 @@ import itertools as it
 from functools import reduce, partial
 
 import pandas as pd
+from pandas import DataFrame, Series
 import numpy as np
 
 import matplotlib as mpl
@@ -29,7 +30,7 @@ import statsmodels.api as sm
 
 from pydataset import data
 
-from zgulde import comp, pluck
+from zgulde import comp, pluck, extend_pandas
 
 # check if we're running interactively
 if hasattr(sys, 'ps1'):
