@@ -16,7 +16,7 @@ The following methods are added to all Series:
 
 and the following are added to all DataFrames:
 
-- `chi2`_: run chi square tests on all column combinations 
+- `chi2`_: run chi square tests on all column combinations
 - `correlation_heatmap`_: plot a heatmap of the correlations
 - `crosstab`_ (xtab): shortcut to pd.crosstab
 - `drop_outliers`_: remove outliers
@@ -26,7 +26,7 @@ and the following are added to all DataFrames:
 - `n_outliers`_: summarize the number of outliers in each numeric column
 - `ttest`_: run multiple 1 sample t-tests for multiple categories
 - `ttest_2samp`_: run multiple 2 sample t-tests for multiple categories
-- `unnest`_: handle multiple values in a single cell 
+- `unnest`_: handle multiple values in a single cell
 
 It also defines the left and right shift operators to be similar to
 ``pandas.DataFrame.pipe``. For example:
@@ -518,7 +518,7 @@ def unnest(df: DataFrame, col: str, split=True, sep=',', reset_index=True) -> Da
     Example
     -------
 
-    >>> df = pd.DataFrame(dict(x=list('abc'), y=['a,b,c', 'd,e', 'f']))    
+    >>> df = pd.DataFrame(dict(x=list('abc'), y=['a,b,c', 'd,e', 'f']))
     >>> df
        x      y
     0  a  a,b,c
@@ -549,18 +549,17 @@ def correlation_heatmap(df: DataFrame, fancy=False, **kwargs):
 
     Any additional kwargs are passed to ``seaborn.heatmap`` and the resulting
     axes object is returned.
-    
+
     >>> x = np.arange(0, 10)
     >>> y = x / 2
     >>> df = pd.DataFrame(dict(x=x, y=y))
-    >>> ax = df.correlation_heatmap()
-    >>> type(ax)
-    <class 'matplotlib.axes._subplots.AxesSubplot'>
+    >>> df.correlation_heatmap()
+    <matplotlib.axes._subplots.AxesSubplot object at ...>
     '''
     if 'cmap' not in kwargs:
         kwargs['cmap'] = cm.coolwarm_r
         # kwargs['cmap'] = cm.PiYG
-        
+
     if not fancy:
         return sns.heatmap(df.corr(), center=0, annot=True, **kwargs)
 
@@ -704,7 +703,7 @@ def crosstab(df: DataFrame, rows, cols, values=None, **kwargs) -> DataFrame:
                provided as well. See ``pd.crosstab`` for more details.
     - kwargs : any additional key word arguments to pass along to
                ``pd.crosstab``
-    
+
     Example
     -------
 
@@ -719,20 +718,20 @@ def crosstab(df: DataFrame, rows, cols, values=None, **kwargs) -> DataFrame:
     5  b  d  5
     >>> df.crosstab('x', 'y')
     y  c  d
-    x      
+    x
     a  2  1
     b  1  2
     >>> (df.crosstab('x', 'y') == pd.crosstab(df.x, df.y)).all(axis=None)
     True
     >>> df.crosstab('x', 'y', margins=True)
     y    c  d  All
-    x             
+    x
     a    2  1    3
     b    1  2    3
     All  3  3    6
     >>> df.xtab(rows='x', cols='y', values='z', aggfunc='mean')
     y  c  d
-    x      
+    x
     a  1  1
     b  4  4
     '''
@@ -758,7 +757,7 @@ def ttest(df: DataFrame, target: str) -> DataFrame:
     >>> tips = tips[['total_bill', 'day', 'time']]
     >>> tips.ttest('total_bill')
                      statistic    pvalue    n
-    variable value                           
+    variable value
     day      Sun      1.603035  0.113130   76
              Sat      0.644856  0.520737   87
              Thur    -2.099957  0.039876   62
@@ -770,7 +769,7 @@ def ttest(df: DataFrame, target: str) -> DataFrame:
     for col in df.drop(columns=target):
         unique_vals = df[col].unique()
         ttests = DataFrame([ttest_1samp(df[df[col] == v][target],
-                                        df[target].mean()) 
+                                        df[target].mean())
                             for v in unique_vals])
         ns = [df[df[col] == v].shape[0] for v in unique_vals]
         ttests = ttests.assign(n=ns, value=unique_vals, variable=col)
@@ -800,7 +799,7 @@ def ttest_2samp(df: DataFrame, target: str) -> DataFrame:
     >>> tips = tips[['total_bill', 'day', 'time']]
     >>> tips.ttest_2samp('total_bill')
                      statistic    pvalue    n
-    variable value                           
+    variable value
     day      Sun      1.927317  0.055111   76
              Sat      0.855634  0.393046   87
              Thur    -2.170294  0.030958   62
@@ -812,7 +811,7 @@ def ttest_2samp(df: DataFrame, target: str) -> DataFrame:
     for col in df.drop(columns=target):
         unique_vals = df[col].unique()
         ttests = DataFrame([ttest_ind(df[df[col] == v][target],
-                                      df[df[col] != v][target]) 
+                                      df[df[col] != v][target])
                             for v in unique_vals])
         ns = [df[df[col] == v].shape[0] for v in unique_vals]
         ttests = ttests.assign(n=ns, value=unique_vals, variable=col)
