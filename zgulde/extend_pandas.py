@@ -547,18 +547,26 @@ def correlation_heatmap(df: DataFrame, fancy=False, **kwargs):
     '''
     Plot a heatmap of the correlation matrix for the data frame.
 
-    Any additional kwargs are passed to ``seaborn.heatmap``
+    Any additional kwargs are passed to ``seaborn.heatmap`` and the resulting
+    axes object is returned.
+    
+    >>> x = np.arange(0, 10)
+    >>> y = x / 2
+    >>> df = pd.DataFrame(dict(x=x, y=y))
+    >>> ax = df.correlation_heatmap()
+    >>> type(ax)
+    <class 'matplotlib.axes._subplots.AxesSubplot'>
     '''
+    if 'cmap' not in kwargs:
+        kwargs['cmap'] = cm.coolwarm_r
+        # kwargs['cmap'] = cm.PiYG
+        
     if not fancy:
-        return sns.heatmap(df.corr(), cmap=cm.PiYG, center=0, annot=True, **kwargs)
+        return sns.heatmap(df.corr(), center=0, annot=True, **kwargs)
 
     cmat = df.corr()
 
     sns.set(style="white")
-    cmap = sns.diverging_palette(220, 10, as_cmap=True)
-    if 'cmap' not in kwargs:
-        kwargs['cmap'] = cmap
-
     mask = np.zeros_like(cmat, dtype=np.bool)
     mask[np.triu_indices_from(mask)] = True
 
