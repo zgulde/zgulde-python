@@ -468,7 +468,7 @@ def outliers(s: Series, how='iqr', k=1.5, std_cutoff=2) -> Series:
         return zscore(s).abs() > std_cutoff
     raise ValueError('how must be one of {iqr,std}')
 
-def nnull(df: DataFrame) -> DataFrame:
+def nnull(df: DataFrame, axis=0) -> DataFrame:
     '''
     Provide a summary of null values in each column.
 
@@ -483,13 +483,20 @@ def nnull(df: DataFrame) -> DataFrame:
     0  1.0  4.0
     1  2.0  NaN
     2  NaN  NaN
-    >>> df.nnull()
+    >>> nulls_by_column = df.nnull()
+    >>> nulls_by_column
        n_missing  p_missing
     x          1   0.333333
     y          2   0.666667
+    >>> nulls_by_row = df.nnull(axis=1)
+    >>> nulls_by_row
+       n_missing  p_missing
+    0          0        0.0
+    1          1        0.5
+    2          2        1.0
     '''
-    n_missing = df.isnull().sum()
-    p_missing = n_missing / df.shape[0]
+    n_missing = df.isnull().sum(axis=axis)
+    p_missing = n_missing / df.shape[axis]
     return pd.DataFrame(dict(n_missing=n_missing, p_missing=p_missing))
 
 def unnest(df: DataFrame, col: str, split=True, sep=',', reset_index=True) -> DataFrame:
