@@ -1,0 +1,1008 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.15.2: http://docutils.sourceforge.net/" />
+<title>Zgulde's pandas extensions</title>
+<style type="text/css">
+
+html {
+  font-size: 16px;
+}
+
+body {
+  max-width: 1024px;
+  margin: 0 auto;
+  font-family: sans-serif;
+}
+
+h1 { font-size: 3rem; }
+h2 { font-size: 2.5rem; }
+h3 { font-size: 1.5rem; }
+
+.section {
+  padding-left: 1rem;
+  border: 1px solid black;
+  border-radius: 5px;
+  margin: 5px 0;
+}
+
+</style>
+</head>
+<body>
+<div class="document" id="zgulde-s-pandas-extensions">
+<h1 class="title">Zgulde's pandas extensions</h1>
+
+<p>This module adds functionality to pandas Series and DataFrame objects. The
+objects in pandas will be modified by simply importing this module.</p>
+<pre class="doctest-block">
+&gt;&gt;&gt; import zgulde.extend_pandas
+</pre>
+<p>The following methods are added to all Series:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#cut">cut</a> (bin): put data into bins; shortcut to pd.cut</li>
+<li><a class="reference internal" href="#get-scaler">get_scaler</a>: obtain a function that scales a series</li>
+<li><a class="reference internal" href="#ln">ln</a>: natural log</li>
+<li><a class="reference internal" href="#log2">log2</a>: log base 2</li>
+<li><a class="reference internal" href="#log">log</a>: log base 10</li>
+<li><a class="reference internal" href="#outliers">outliers</a>: detect outliers</li>
+<li><a class="reference internal" href="#top-n">top_n</a>: encode as the most frequent n values or &quot;Other&quot;</li>
+<li><a class="reference internal" href="#zscore">zscore</a>: obtain the z-score for every value</li>
+</ul>
+<p>and the following are added to all DataFrames:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#chi2">chi2</a>: run chi square tests on all column combinations</li>
+<li><a class="reference internal" href="#correlation-heatmap">correlation_heatmap</a>: plot a heatmap of the correlations</li>
+<li><a class="reference internal" href="#crosstab">crosstab</a> (xtab): shortcut to pd.crosstab</li>
+<li><a class="reference internal" href="#drop-outliers">drop_outliers</a>: remove outliers</li>
+<li><a class="reference internal" href="#get-scalers">get_scalers</a>: obtain a function that scales multiple columns</li>
+<li><a class="reference internal" href="#hdtl">hdtl</a>: look at the head and tail of the data frame</li>
+<li><a class="reference internal" href="#nnull">nnull</a> (nna): summarize the number of missing values</li>
+<li><a class="reference internal" href="#n-outliers">n_outliers</a>: summarize the number of outliers in each numeric column</li>
+<li><a class="reference internal" href="#ttest">ttest</a>: run multiple 1 sample t-tests for multiple categories</li>
+<li><a class="reference internal" href="#ttest-2samp">ttest_2samp</a>: run multiple 2 sample t-tests for multiple categories</li>
+<li><a class="reference internal" href="#select">select</a>: select and rename columns in a dataframe</li>
+<li><a class="reference internal" href="#sql">sql</a>: run SQL queries against a dataframe</li>
+<li><a class="reference internal" href="#unnest">unnest</a>: handle multiple values in a single cell</li>
+</ul>
+<p>It also defines the left and right shift operators to be similar to
+<tt class="docutils literal">pandas.DataFrame.pipe</tt>. For example:</p>
+<pre class="doctest-block">
+&gt;&gt;&gt; import pandas as pd
+&gt;&gt;&gt; import numpy as np
+&gt;&gt;&gt; df = pd.DataFrame(dict(x=np.arange(4)))
+&gt;&gt;&gt; df
+   x
+0  0
+1  1
+2  2
+3  3
+&gt;&gt;&gt; create_y = lambda df: df.assign(y=df.x + 1)
+&gt;&gt;&gt; df &gt;&gt; create_y
+   x  y
+0  0  1
+1  1  2
+2  2  3
+3  3  4
+&gt;&gt;&gt; # This gives the same results as .pipe
+&gt;&gt;&gt; ((df &gt;&gt; create_y) == df.pipe(create_y)).all(axis=None)
+True
+</pre>
+<div class="section" id="data-frame-extensions">
+<h1>Data Frame Extensions</h1>
+<div class="section" id="chi2">
+<h2><tt class="docutils literal">chi2</tt></h2>
+<p>Performs a chi squared contingency table test between all the combinations
+of two columns in the data frame.</p>
+<div class="section" id="returns">
+<h3>Returns</h3>
+<p>(pvals, chi2s)</p>
+<p>A tuple with two data frames, each which have all of the columns from the
+original data frame as both the indexes and the columns. The values in the
+first are the p-values, the values in the second are the chi square test
+statistics.</p>
+</div>
+<div class="section" id="example">
+<h3>Example</h3>
+<pre class="doctest-block">
+&gt;&gt;&gt; from seaborn import load_dataset
+&gt;&gt;&gt; tips = load_dataset('tips')
+&gt;&gt;&gt; p_vals, chi2s = tips[['smoker', 'time', 'day']].chi2()
+&gt;&gt;&gt; p_vals
+             smoker        time          day
+smoker          NaN    0.477149  1.05676e-05
+time       0.477149         NaN   8.4499e-47
+day     1.05676e-05  8.4499e-47          NaN
+&gt;&gt;&gt; chi2s
+          smoker      time      day
+smoker       NaN  0.505373  25.7872
+time    0.505373       NaN  217.113
+day      25.7872   217.113      NaN
+</pre>
+</div>
+</div>
+<div class="section" id="cleanup-column-names">
+<h2><tt class="docutils literal">cleanup_column_names</tt></h2>
+<p>Returns a data frame with the column names cleaned up. Special characters
+are removed and spaces, dots, and dashes are replaced with underscores.</p>
+<div class="section" id="parameters">
+<h3>Parameters</h3>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt>inplace <span class="classifier-delimiter">:</span> <span class="classifier">Whether or not to modify the data frame in-place and return</span></dt>
+<dd>None.</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="id1">
+<h3>Example</h3>
+<pre class="doctest-block">
+&gt;&gt;&gt; df = pd.DataFrame({'*Feature&amp; A': [1, 2], ' feature.b  ': [2, 3], 'FEATURE-C': [3, 4]})
+&gt;&gt;&gt; df
+   *Feature&amp; A   feature.b    FEATURE-C
+0            1             2          3
+1            2             3          4
+&gt;&gt;&gt; df.cleanup_column_names()
+   feature_a  feature_b  feature_c
+0          1          2          3
+1          2          3          4
+&gt;&gt;&gt; df
+   *Feature&amp; A   feature.b    FEATURE-C
+0            1             2          3
+1            2             3          4
+&gt;&gt;&gt; df.cleanup_column_names(inplace=True)
+&gt;&gt;&gt; df
+   feature_a  feature_b  feature_c
+0          1          2          3
+1          2          3          4
+</pre>
+</div>
+</div>
+<div class="section" id="correlation-heatmap">
+<h2><tt class="docutils literal">correlation_heatmap</tt></h2>
+<p>Plot a heatmap of the correlation matrix for the data frame.</p>
+<p>Any additional kwargs are passed to <tt class="docutils literal">seaborn.heatmap</tt> and the resulting
+axes object is returned.</p>
+<pre class="doctest-block">
+&gt;&gt;&gt; x = np.arange(0, 10)
+&gt;&gt;&gt; y = x / 2
+&gt;&gt;&gt; df = pd.DataFrame(dict(x=x, y=y))
+&gt;&gt;&gt; df.correlation_heatmap()
+&lt;matplotlib.axes._subplots.AxesSubplot object at ...&gt;
+</pre>
+</div>
+<div class="section" id="crosstab">
+<h2><tt class="docutils literal">crosstab</tt></h2>
+<p>Shortcut to call to pd.crosstab.</p>
+<div class="section" id="id2">
+<h3>Parameters</h3>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt>rows <span class="classifier-delimiter">:</span> <span class="classifier">the name of the columns that will make up the rows in resulting</span></dt>
+<dd>contingency table</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>cols <span class="classifier-delimiter">:</span> <span class="classifier">the name of the columns that will make up the columns in resulting</span></dt>
+<dd>contingency table</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>values <span class="classifier-delimiter">:</span> <span class="classifier">(optional) name of the column to use for the cell values in the</span></dt>
+<dd>resulting contingency table. If supplied, aggfunc must be
+provided as well. See <tt class="docutils literal">pd.crosstab</tt> for more details.</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>kwargs <span class="classifier-delimiter">:</span> <span class="classifier">any additional key word arguments to pass along to</span></dt>
+<dd><tt class="docutils literal">pd.crosstab</tt></dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="id3">
+<h3>Example</h3>
+<pre class="doctest-block">
+&gt;&gt;&gt; df = pd.DataFrame(dict(x=list('aaabbb'), y=list('cdcdcd'), z=range(6)))
+&gt;&gt;&gt; df
+   x  y  z
+0  a  c  0
+1  a  d  1
+2  a  c  2
+3  b  d  3
+4  b  c  4
+5  b  d  5
+&gt;&gt;&gt; df.crosstab('x', 'y')
+y  c  d
+x
+a  2  1
+b  1  2
+&gt;&gt;&gt; (df.crosstab('x', 'y') == pd.crosstab(df.x, df.y)).all(axis=None)
+True
+&gt;&gt;&gt; df.crosstab('x', 'y', margins=True)
+y    c  d  All
+x
+a    2  1    3
+b    1  2    3
+All  3  3    6
+&gt;&gt;&gt; df.xtab(rows='x', cols='y', values='z', aggfunc='mean')
+y  c  d
+x
+a  1  1
+b  4  4
+</pre>
+</div>
+</div>
+<div class="section" id="drop-outliers">
+<h2><tt class="docutils literal">drop_outliers</tt></h2>
+<p>Drop rows with outliers in the given columns from the dataframe</p>
+<p>See the docs for .outliers for more details on parameters, and to customize
+how the outliers are detected.</p>
+<div class="section" id="id4">
+<h3>Parameters</h3>
+<dl class="docutils">
+<dt>cols <span class="classifier-delimiter">:</span> <span class="classifier">either a string or a list of strings of which column(s) to drop the</span></dt>
+<dd>outliers in</dd>
+<dt>kwargs <span class="classifier-delimiter">:</span> <span class="classifier">additional key-word arguments passed on to</span></dt>
+<dd><tt class="docutils literal">pandas.Series.outliers</tt></dd>
+</dl>
+</div>
+<div class="section" id="id5">
+<h3>Example</h3>
+<pre class="doctest-block">
+&gt;&gt;&gt; df = pd.DataFrame(dict(x=[1, 2, 3, 4, 5, 1000], y=[1000, 2, 3, 4, 5, 6]))
+&gt;&gt;&gt; df
+      x     y
+0     1  1000
+1     2     2
+2     3     3
+3     4     4
+4     5     5
+5  1000     6
+&gt;&gt;&gt; df.drop_outliers('x')
+   x     y
+0  1  1000
+1  2     2
+2  3     3
+3  4     4
+4  5     5
+&gt;&gt;&gt; df.drop_outliers('y')
+      x  y
+1     2  2
+2     3  3
+3     4  4
+4     5  5
+5  1000  6
+&gt;&gt;&gt; df.drop_outliers(['x', 'y'])
+   x  y
+1  2  2
+2  3  3
+3  4  4
+4  5  5
+</pre>
+</div>
+</div>
+<div class="section" id="get-scalers">
+<h2><tt class="docutils literal">get_scalers</tt></h2>
+<p>Obtain a function that will scale multiple columns on a data frame.</p>
+<p>The returned function accepts a data frame and returns the data frame with
+the specified column(s) scaled.</p>
+<p>This can be useful to make sure you apply the same transformation to both
+training and test data sets.</p>
+<p>See the docstring for Series.get_scaler for more details.</p>
+<div class="section" id="id6">
+<h3>Parameters</h3>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt>columns <span class="classifier-delimiter">:</span> <span class="classifier">Either a single string, or a list of strings where each string</span></dt>
+<dd>is a column name to scale</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>kwargs <span class="classifier-delimiter">:</span> <span class="classifier">any additional arguments are passed to Series.get_scaler for each</span></dt>
+<dd>column specified</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="id7">
+<h3>Example</h3>
+<pre class="doctest-block">
+&gt;&gt;&gt; df = pd.DataFrame(dict(x=[1, 2, 3, 10], y=[-10, 1, 1, 2]))
+&gt;&gt;&gt; df
+    x   y
+0   1 -10
+1   2   1
+2   3   1
+3  10   2
+&gt;&gt;&gt; scale_x = df.get_scalers('x', how='minmax')
+&gt;&gt;&gt; scale_x(df)
+          x   y
+0  0.000000 -10
+1  0.111111   1
+2  0.222222   1
+3  1.000000   2
+&gt;&gt;&gt; scale_x_and_y = df.get_scalers(['x', 'y'])
+&gt;&gt;&gt; scale_x_and_y(df)
+          x         y
+0 -0.734847 -1.494836
+1 -0.489898  0.439658
+2 -0.244949  0.439658
+3  1.469694  0.615521
+&gt;&gt;&gt; df.pipe(scale_x_and_y)
+          x         y
+0 -0.734847 -1.494836
+1 -0.489898  0.439658
+2 -0.244949  0.439658
+3  1.469694  0.615521
+</pre>
+</div>
+</div>
+<div class="section" id="hdtl">
+<h2><tt class="docutils literal">hdtl</tt></h2>
+<p>Return the head and the tail of the data frame.</p>
+<div class="section" id="id8">
+<h3>Parameters</h3>
+<ul class="simple">
+<li>n : number of rows to get from both the head and tail</li>
+</ul>
+</div>
+<div class="section" id="id9">
+<h3>Example</h3>
+<pre class="doctest-block">
+&gt;&gt;&gt; df = pd.DataFrame(dict(x=np.arange(10), y=np.arange(10)))
+&gt;&gt;&gt; df
+   x  y
+0  0  0
+1  1  1
+2  2  2
+3  3  3
+4  4  4
+5  5  5
+6  6  6
+7  7  7
+8  8  8
+9  9  9
+&gt;&gt;&gt; df.hdtl(1)
+   x  y
+0  0  0
+9  9  9
+&gt;&gt;&gt; df.hdtl()
+   x  y
+0  0  0
+1  1  1
+2  2  2
+7  7  7
+8  8  8
+9  9  9
+</pre>
+</div>
+</div>
+<div class="section" id="nnull">
+<h2><tt class="docutils literal">nnull</tt></h2>
+<p>Provide a summary of null values in each column.</p>
+<p>alias of nna</p>
+<div class="section" id="id10">
+<h3>Example</h3>
+<pre class="doctest-block">
+&gt;&gt;&gt; df = pd.DataFrame(dict(x=[1, 2, np.nan], y=[4, np.nan, np.nan]))
+&gt;&gt;&gt; df
+     x    y
+0  1.0  4.0
+1  2.0  NaN
+2  NaN  NaN
+&gt;&gt;&gt; nulls_by_column = df.nnull()
+&gt;&gt;&gt; nulls_by_column
+   n_missing  p_missing
+x          1   0.333333
+y          2   0.666667
+&gt;&gt;&gt; nulls_by_row = df.nnull(axis=1)
+&gt;&gt;&gt; nulls_by_row
+   n_missing  p_missing
+0          0        0.0
+1          1        0.5
+2          2        1.0
+</pre>
+</div>
+</div>
+<div class="section" id="n-outliers">
+<h2><tt class="docutils literal">n_outliers</tt></h2>
+<p>Provide a summary of the number of outliers in each numeric column.</p>
+<div class="section" id="id11">
+<h3>Parameters</h3>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt>kwargs <span class="classifier-delimiter">:</span> <span class="classifier">any additional arguments to pass along to</span></dt>
+<dd><tt class="docutils literal">pandas.Series.outliers</tt></dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="id12">
+<h3>Returns</h3>
+<p>A <tt class="docutils literal">pandas.DataFrame</tt> indexed by the column names of the the data frame,
+with columns that indicate the number of outliers and the percentage of
+outliers in each column.</p>
+</div>
+<div class="section" id="id13">
+<h3>Example</h3>
+<pre class="doctest-block">
+&gt;&gt;&gt; x = [1, 2, 3, 4, 5, 1, 2, 3, 4, 5]
+&gt;&gt;&gt; y = [1, 2, 3, 4, 5, 100, 2, 3, 4, 5]
+&gt;&gt;&gt; z = [1, 2, 3, 4, 5, -100, 2, 3, 100, 5]
+&gt;&gt;&gt; df = pd.DataFrame(dict(x=x, y=y, z=z))
+&gt;&gt;&gt; df
+   x    y    z
+0  1    1    1
+1  2    2    2
+2  3    3    3
+3  4    4    4
+4  5    5    5
+5  1  100 -100
+6  2    2    2
+7  3    3    3
+8  4    4  100
+9  5    5    5
+&gt;&gt;&gt; df.n_outliers()
+   n_outliers  p_outliers
+x           0         0.0
+y           1         0.1
+z           2         0.2
+</pre>
+</div>
+</div>
+<div class="section" id="pluck">
+<h2><tt class="docutils literal">pluck</tt></h2>
+<pre class="doctest-block">
+&gt;&gt;&gt; df = pd.DataFrame({'x': [1, 2, 3], 'y': ['a', 'b', 'c']})
+&gt;&gt;&gt; x, y = df.pluck('x', 'y')
+&gt;&gt;&gt; x
+0    1
+1    2
+2    3
+Name: x, dtype: int64
+&gt;&gt;&gt; y
+0    a
+1    b
+2    c
+Name: y, dtype: object
+</pre>
+</div>
+<div class="section" id="ttest">
+<h2><tt class="docutils literal">ttest</tt></h2>
+<p>Runs a 1 sample t-test comparing the specified target variable to the
+overall mean among all of the possible subgroups.</p>
+<div class="section" id="id14">
+<h3>Parameters</h3>
+<ul class="simple">
+<li>target : name of the column that holds the target (continuous) variable</li>
+</ul>
+</div>
+<div class="section" id="id15">
+<h3>Example</h3>
+<pre class="doctest-block">
+&gt;&gt;&gt; from seaborn import load_dataset
+&gt;&gt;&gt; tips = load_dataset('tips')
+&gt;&gt;&gt; tips = tips[['total_bill', 'day', 'time']]
+&gt;&gt;&gt; tips.ttest('total_bill')
+                 statistic    pvalue    n
+variable value
+day      Sun      1.603035  0.113130   76
+         Sat      0.644856  0.520737   87
+         Thur    -2.099957  0.039876   62
+         Fri     -1.383042  0.183569   19
+time     Dinner   1.467432  0.144054  176
+         Lunch   -2.797882  0.006710   68
+</pre>
+</div>
+</div>
+<div class="section" id="ttest-2samp">
+<h2><tt class="docutils literal">ttest_2samp</tt></h2>
+<p>Runs a 2 sample t-test comparing the specified target variable for every
+unique value from every other column in the data frame.</p>
+<p>The resulting t-statistic and pvalue are based on subdividing the data for
+each unique value for each column, with each individual value indicating
+that the test was performed based on belonging to that unique value vs not
+belonging to that group.</p>
+<div class="section" id="id16">
+<h3>Parameters</h3>
+<ul class="simple">
+<li>target : name of the column that holds the target (continuous) variable</li>
+</ul>
+</div>
+<div class="section" id="id17">
+<h3>Example</h3>
+<pre class="doctest-block">
+&gt;&gt;&gt; from seaborn import load_dataset
+&gt;&gt;&gt; tips = load_dataset('tips')
+&gt;&gt;&gt; tips = tips[['total_bill', 'day', 'time']]
+&gt;&gt;&gt; tips.ttest_2samp('total_bill')
+                 statistic    pvalue    n
+variable value
+day      Sun      1.927317  0.055111   76
+         Sat      0.855634  0.393046   87
+         Thur    -2.170294  0.030958   62
+         Fri     -1.345462  0.179735   19
+time     Dinner   2.897638  0.004105  176
+         Lunch   -2.897638  0.004105   68
+</pre>
+</div>
+</div>
+<div class="section" id="unnest">
+<h2><tt class="docutils literal">unnest</tt></h2>
+<p>Turns a column with multiple values in each row in it into separate rows,
+each with a single value.</p>
+<div class="section" id="id18">
+<h3>Parameters</h3>
+<ul class="simple">
+<li>col : name of the column to unnest</li>
+<li><dl class="first docutils">
+<dt>split <span class="classifier-delimiter">:</span> <span class="classifier">default True. whether or not to split the data in the column. Set</span></dt>
+<dd>this to False if the column already contains lists in each row</dd>
+</dl>
+</li>
+<li>sep : separator to split on. Ignored if split=False</li>
+<li><dl class="first docutils">
+<dt>reset_index <span class="classifier-delimiter">:</span> <span class="classifier">default True. whether to reset the index in the resulting</span></dt>
+<dd>data frame. If False, the resulting data frame will have an
+index that could contain duplicates.</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="id19">
+<h3>Example</h3>
+<pre class="doctest-block">
+&gt;&gt;&gt; df = pd.DataFrame(dict(x=list('abc'), y=['a,b,c', 'd,e', 'f']))
+&gt;&gt;&gt; df
+   x      y
+0  a  a,b,c
+1  b    d,e
+2  c      f
+&gt;&gt;&gt; df.unnest('y')
+   x  y
+0  a  a
+1  a  b
+2  a  c
+3  b  d
+4  b  e
+5  c  f
+</pre>
+</div>
+</div>
+<div class="section" id="select">
+<h2><tt class="docutils literal">select</tt></h2>
+<p>Return specified columns from a dataframe, optionally renaming some.</p>
+<div class="section" id="id20">
+<h3>Parameters</h3>
+<ul class="simple">
+<li>args: strings that are column names to include</li>
+<li>kwargs: any additional columns to rename</li>
+</ul>
+</div>
+<div class="section" id="id21">
+<h3>Returns</h3>
+<p>A subset of the dataframe</p>
+</div>
+<div class="section" id="examples">
+<h3>Examples</h3>
+<pre class="doctest-block">
+&gt;&gt;&gt; df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]})
+&gt;&gt;&gt; df
+   a  b  c
+0  1  4  7
+1  2  5  8
+2  3  6  9
+&gt;&gt;&gt; df.select('a')
+   a
+0  1
+1  2
+2  3
+&gt;&gt;&gt; df.select('a', 'b')
+   a  b
+0  1  4
+1  2  5
+2  3  6
+&gt;&gt;&gt; df.select('a', c='the_letter_c')
+   a  the_letter_c
+0  1             7
+1  2             8
+2  3             9
+&gt;&gt;&gt; df.select(a='A', b='BBB')
+   A  BBB
+0  1    4
+1  2    5
+2  3    6
+</pre>
+</div>
+</div>
+<div class="section" id="sql">
+<h2><tt class="docutils literal">sql</tt></h2>
+<p>Run a SQL query against the dataframe.</p>
+<p>The dataframe is converted to a sqlite database and the provided query is
+run against it. As such, any SQL that is valid in sqlite is supported.</p>
+<div class="section" id="id22">
+<h3>Parameters</h3>
+<ul class="simple">
+<li>query: The SQL query to run</li>
+<li>table: (optional) name of the table to call the dataframe. Defaults to <cite>df</cite></li>
+<li><dl class="first docutils">
+<dt>in_memory: whether or not the sqlite database should be in memory or</dt>
+<dd>written to an external file. If False, a temporary file will be
+created and cleaned up after the query is run.</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>index: whether or not to include the dataframe's index in the table that</dt>
+<dd>is queried against.</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="id23">
+<h3>Examples</h3>
+<pre class="doctest-block">
+&gt;&gt;&gt; df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': ['a', 'a', 'b']})
+&gt;&gt;&gt; df
+   a  b  c
+0  1  4  a
+1  2  5  a
+2  3  6  b
+&gt;&gt;&gt; df.sql('SELECT * FROM df')
+   a  b  c
+0  1  4  a
+1  2  5  a
+2  3  6  b
+&gt;&gt;&gt; df.sql('SELECT * FROM my_df', table='my_df')
+   a  b  c
+0  1  4  a
+1  2  5  a
+2  3  6  b
+&gt;&gt;&gt; df.sql('SELECT c, AVG(a + b) FROM df GROUP BY c')
+   c  AVG(a + b)
+0  a         6.0
+1  b         9.0
+</pre>
+</div>
+</div>
+</div>
+<div class="section" id="series-extensions">
+<h1>Series Extensions</h1>
+<div class="section" id="cut">
+<h2><tt class="docutils literal">cut</tt></h2>
+<p>Bin series values into discrete intervals.</p>
+<p>Shortcut to pd.cut</p>
+<div class="section" id="id24">
+<h3>Parameters</h3>
+<ul class="simple">
+<li>args : positional arguments passed to <tt class="docutils literal">pandas.cut</tt></li>
+<li>keyword : keyword arguments passed to <tt class="docutils literal">pandas.cut</tt></li>
+</ul>
+</div>
+<div class="section" id="id25">
+<h3>Example</h3>
+<pre class="doctest-block">
+&gt;&gt;&gt; x = pd.Series(range(1, 7))
+&gt;&gt;&gt; x
+0    1
+1    2
+2    3
+3    4
+4    5
+5    6
+dtype: int64
+&gt;&gt;&gt; x.cut(2)
+0    (0.995, 3.5]
+1    (0.995, 3.5]
+2    (0.995, 3.5]
+3      (3.5, 6.0]
+4      (3.5, 6.0]
+5      (3.5, 6.0]
+dtype: category
+Categories (2, interval[float64]): [(0.995, 3.5] &lt; (3.5, 6.0]]
+&gt;&gt;&gt; x.cut(bins=[0, 3, 6])
+0    (0, 3]
+1    (0, 3]
+2    (0, 3]
+3    (3, 6]
+4    (3, 6]
+5    (3, 6]
+dtype: category
+Categories (2, interval[int64]): [(0, 3] &lt; (3, 6]]
+</pre>
+</div>
+</div>
+<div class="section" id="get-scaler">
+<h2><tt class="docutils literal">get_scaler</tt></h2>
+<p>Obtain a function that will scale the series on a data frame.</p>
+<p>The returned function accepts a data frame and returns the data frame with
+the specified column scaled.</p>
+<p>This can be useful to make sure you apply the same transformation to both
+training and test data sets.</p>
+<ul class="simple">
+<li>zscore = (x - mu) / sigma</li>
+<li>minmax = (x - min) / (max - min)</li>
+</ul>
+<div class="section" id="id26">
+<h3>Parameters</h3>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt>how <span class="classifier-delimiter">:</span> <span class="classifier">One of {'zscore', 'minmax'} to either apply z-score or min-max</span></dt>
+<dd>scaling</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="id27">
+<h3>Example</h3>
+<pre class="doctest-block">
+&gt;&gt;&gt; df = pd.DataFrame(dict(x=[1, 2, 3, 4, 5, 1000], y=[1000, 2, 3, 4, 5, 6]))
+&gt;&gt;&gt; scale_x = df.x.get_scaler()
+&gt;&gt;&gt; scale_x(df)
+          x     y
+0 -0.413160  1000
+1 -0.410703     2
+2 -0.408246     3
+3 -0.405789     4
+4 -0.403332     5
+5  2.041229     6
+&gt;&gt;&gt; scale_y = df.y.get_scaler('minmax')
+&gt;&gt;&gt; scale_y(df)
+      x         y
+0     1  1.000000
+1     2  0.000000
+2     3  0.001002
+3     4  0.002004
+4     5  0.003006
+5  1000  0.004008
+&gt;&gt;&gt; df.pipe(scale_x).pipe(scale_y)
+          x         y
+0 -0.413160  1.000000
+1 -0.410703  0.000000
+2 -0.408246  0.001002
+3 -0.405789  0.002004
+4 -0.403332  0.003006
+5  2.041229  0.004008
+</pre>
+</div>
+</div>
+<div class="section" id="ln">
+<h2><tt class="docutils literal">ln</tt></h2>
+<p>Returns the natural log of the values in the series using np.log</p>
+<div class="section" id="id28">
+<h3>Example</h3>
+<pre class="doctest-block">
+&gt;&gt;&gt; x = pd.Series([1, np.e, np.e ** 2, np.e ** 3])
+&gt;&gt;&gt; x
+0     1.000000
+1     2.718282
+2     7.389056
+3    20.085537
+dtype: float64
+&gt;&gt;&gt; x.ln()
+0    0.0
+1    1.0
+2    2.0
+3    3.0
+dtype: float64
+</pre>
+</div>
+</div>
+<div class="section" id="log">
+<h2><tt class="docutils literal">log</tt></h2>
+<p>Returns the log base 10 of the values in the series using np.log10</p>
+<div class="section" id="id29">
+<h3>Example</h3>
+<pre class="doctest-block">
+&gt;&gt;&gt; x = pd.Series([1, 10, 100, 1000])
+&gt;&gt;&gt; x
+0       1
+1      10
+2     100
+3    1000
+dtype: int64
+&gt;&gt;&gt; x.log()
+0    0.0
+1    1.0
+2    2.0
+3    3.0
+dtype: float64
+</pre>
+</div>
+</div>
+<div class="section" id="log2">
+<h2><tt class="docutils literal">log2</tt></h2>
+<p>Returns the log base 2 of the values in the series using np.log2</p>
+<div class="section" id="id30">
+<h3>Example</h3>
+<pre class="doctest-block">
+&gt;&gt;&gt; x = pd.Series([1, 2,4, 8, 16])
+&gt;&gt;&gt; x
+0     1
+1     2
+2     4
+3     8
+4    16
+dtype: int64
+&gt;&gt;&gt; x.log2()
+0    0.0
+1    1.0
+2    2.0
+3    3.0
+4    4.0
+dtype: float64
+</pre>
+</div>
+</div>
+<div class="section" id="outliers">
+<h2><tt class="docutils literal">outliers</tt></h2>
+<p>Detect outliers in the series.</p>
+<div class="section" id="id31">
+<h3>Returns</h3>
+<p>A pandas Series of boolean values indicating whether each point is an
+outlier or not.</p>
+</div>
+<div class="section" id="id32">
+<h3>Parameters</h3>
+<dl class="docutils">
+<dt>how <span class="classifier-delimiter">:</span> <span class="classifier">{'iqr', 'std'}, default 'iqr'</span></dt>
+<dd><ul class="first last simple">
+<li>'iqr' : identify outliers based on whether they are &gt; q3 + k * iqr
+or &lt; q1 - k * iqr</li>
+<li><dl class="first docutils">
+<dt>'std' <span class="classifier-delimiter">:</span> <span class="classifier">identify outliers based on whether they are further than a</span></dt>
+<dd>specified number of standard deviations from the mean</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>k <span class="classifier-delimiter">:</span> <span class="classifier">value to multiply the iqr by for outlier detection. Ignored when</span></dt>
+<dd>how='std'. Default 1.5</dd>
+<dt>std_cutoff <span class="classifier-delimiter">:</span> <span class="classifier">cutoff for identifying an outlier based on standard deviation.</span></dt>
+<dd>Ignored when how='iqr'. Default 2</dd>
+</dl>
+</div>
+<div class="section" id="id33">
+<h3>Example</h3>
+<pre class="doctest-block">
+&gt;&gt;&gt; df = pd.DataFrame(dict(x=[1, 2, 3, 4, 5, 6, 100],
+...                        y=[-100, 5, 3, 4, 1, 2, 0]))
+&gt;&gt;&gt; df
+     x    y
+0    1 -100
+1    2    5
+2    3    3
+3    4    4
+4    5    1
+5    6    2
+6  100    0
+&gt;&gt;&gt; df.x.outliers()
+0    False
+1    False
+2    False
+3    False
+4    False
+5    False
+6     True
+Name: x, dtype: bool
+&gt;&gt;&gt; df[df.x.outliers()]
+     x  y
+6  100  0
+</pre>
+</div>
+</div>
+<div class="section" id="qcut">
+<h2><tt class="docutils literal">qcut</tt></h2>
+<p>Bin series values into discrete intervals.</p>
+<p>Shortcut to pd.cut</p>
+<div class="section" id="id34">
+<h3>Parameters</h3>
+<ul class="simple">
+<li>args : positional arguments passed to <tt class="docutils literal">pandas.cut</tt></li>
+<li>keyword : keyword arguments passed to <tt class="docutils literal">pandas.cut</tt></li>
+</ul>
+</div>
+<div class="section" id="id35">
+<h3>Example</h3>
+<pre class="doctest-block">
+&gt;&gt;&gt; x = pd.Series(range(1, 7))
+&gt;&gt;&gt; x
+0    1
+1    2
+2    3
+3    4
+4    5
+5    6
+dtype: int64
+&gt;&gt;&gt; x.qcut(2)
+0    (0.999, 3.5]
+1    (0.999, 3.5]
+2    (0.999, 3.5]
+3      (3.5, 6.0]
+4      (3.5, 6.0]
+5      (3.5, 6.0]
+dtype: category
+Categories (2, interval[float64]): [(0.999, 3.5] &lt; (3.5, 6.0]]
+</pre>
+</div>
+</div>
+<div class="section" id="top-n">
+<h2><tt class="docutils literal">top_n</tt></h2>
+<p>Convert the series to the most frequent n values and use other_val for the
+rest.</p>
+<div class="section" id="id36">
+<h3>Parameters</h3>
+<ul class="simple">
+<li>n: number of values to consider</li>
+<li><dl class="first docutils">
+<dt>other_val: value that will be used for everything that isn't the most</dt>
+<dd>frequent n values</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="id37">
+<h3>Returns</h3>
+<p>A pandas Series</p>
+</div>
+<div class="section" id="id38">
+<h3>Examples</h3>
+<pre class="doctest-block">
+&gt;&gt;&gt; s = pd.Series(['a', 'a', 'b', 'b', 'c', 'd'])
+&gt;&gt;&gt; s.top_n(2)
+0        a
+1        a
+2        b
+3        b
+4    Other
+5    Other
+dtype: object
+</pre>
+</div>
+</div>
+<div class="section" id="zscore">
+<h2><tt class="docutils literal">zscore</tt></h2>
+<p>Returns the z-score for every value in the series.</p>
+<p>Z = (x - mu) / sigma</p>
+<div class="section" id="id39">
+<h3>Example</h3>
+<pre class="doctest-block">
+&gt;&gt;&gt; x = pd.Series([1, 2, 3, 4, 5, 6, 7, 8, 9])
+&gt;&gt;&gt; x
+0    1
+1    2
+2    3
+3    4
+4    5
+5    6
+6    7
+7    8
+8    9
+dtype: int64
+&gt;&gt;&gt; x.zscore()
+0   -1.460593
+1   -1.095445
+2   -0.730297
+3   -0.365148
+4    0.000000
+5    0.365148
+6    0.730297
+7    1.095445
+8    1.460593
+dtype: float64
+</pre>
+</div>
+</div>
+</div>
+<script>
+for (let h2 of document.querySelectorAll('h2')) {
+    h2.id = h2.innerText
+    h2.style.color = 'black'
+    h2.innerHTML = `<a href="#${h2.id}">${h2.innerHTML}</a>`
+}
+</script>
+</div>
+</body>
+</html>
