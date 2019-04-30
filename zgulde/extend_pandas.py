@@ -378,8 +378,9 @@ def n_outliers(df: DataFrame, **kwargs) -> Series:
     Returns
     -------
 
-    A ``pandas.Series`` indexed by the column names of the the data frame, where
-    the values represent the number of outliers in that column.
+    A ``pandas.DataFrame`` indexed by the column names of the the data frame,
+    with columns that indicate the number of outliers and the percentage of
+    outliers in each column.
 
     Example
     -------
@@ -401,12 +402,14 @@ def n_outliers(df: DataFrame, **kwargs) -> Series:
     8  4    4  100
     9  5    5    5
     >>> df.n_outliers()
-    x    0
-    y    1
-    z    2
-    dtype: int64
+       n_outliers  p_outliers
+    x           0         0.0
+    y           1         0.1
+    z           2         0.2
     '''
-    return df.select_dtypes('number').apply(lambda s: s.outliers(**kwargs).sum())
+    n_outliers = df.select_dtypes('number').apply(lambda s: s.outliers(**kwargs).sum())
+    p_outliers = n_outliers / df.shape[0]
+    return pd.DataFrame(dict(n_outliers=n_outliers, p_outliers=p_outliers))
 
 
 def outliers(s: Series, how='iqr', k=1.5, std_cutoff=2) -> Series:
