@@ -22,6 +22,7 @@ import numpy as np
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 import seaborn as sns
 
@@ -30,7 +31,7 @@ import statsmodels.api as sm
 
 from pydataset import data
 
-from zgulde import comp, pluck, extend_pandas
+from zgulde import partition, chunk, comp, pluck, extend_pandas
 
 # check if we're running interactively
 if hasattr(sys, 'ps1'):
