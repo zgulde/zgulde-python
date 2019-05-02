@@ -46,3 +46,22 @@ def comp(*fns):
     8
     '''
     return partial(reduce, lambda x, f: f(x), reversed(fns))
+
+def partition(xs, chunksize):
+    '''
+    Partition a sequence into smaller subsequences
+
+    Returns a generator that yields the smaller partitions
+
+    >>> letters = 'abcdefghijklm'
+    >>> partition(letters, 2)
+    <generator object partition at ...>
+    >>> list(partition(letters, 2))
+    ['ab', 'cd', 'ef', 'gh', 'ij', 'kl', 'm']
+    >>> list(partition(letters, 3))
+    ['abc', 'def', 'ghi', 'jkl', 'm']
+    '''
+    for i in range(0, len(xs), chunksize):
+        yield xs[i:i + chunksize]
+
+chunk = partition

@@ -34,8 +34,9 @@ gh-pages: clean ## Build, commit, and push docs for the gh-pages branch
 	git checkout --force master
 	git push origin gh-pages --force
 
-test: ## Run the tests for zgulde/extend_pandas
+test: ## Run the tests for zgulde/extend_pandas and zgulde/__init__
 	python -m doctest -o NORMALIZE_WHITESPACE -o ELLIPSIS zgulde/extend_pandas.py
+	python -m doctest -o NORMALIZE_WHITESPACE -o ELLIPSIS zgulde/__init__.py
 
 help: ## Show this help message
 	@grep -E '^[a-zA-Z._-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%s\033[0m\t%s\n", $$1, $$2}' | column -ts$$'\t'
