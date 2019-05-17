@@ -863,6 +863,70 @@ def chi2(df: DataFrame) -> Tuple[DataFrame, DataFrame]:
         chi2s.loc[x2, x1] = stat
     return p_vals, chi2s
 
+def rformula(df, formula):
+    '''
+    Split a data frame into X and y based on an R Formula.
+
+    Implements a limited subset of the r formula langauge. Formulas like the
+    following are supported:
+
+        y ~ x
+        y ~ x1 + x2
+        y ~ .
+
+    Returns
+    -------
+
+    A tuple where the first element is a pandas DataFrame containing the
+    independent variables, and the second is a pandas Series containing the
+    dependent variable.
+
+    Example
+    -------
+
+    >>> df = pd.DataFrame(dict(a=[1, 2, 3], b=[4, 5, 6], c=[7, 8, 9]))
+    >>> X, y = df.rformula('a ~ b')
+    >>> X
+       b
+    0  4
+    1  5
+    2  6
+    >>> y
+    0    1
+    1    2
+    2    3
+    Name: a, dtype: int64
+    >>> X, y = df.rformula('c ~ a + b')
+    >>> X
+       a  b
+    0  1  4
+    1  2  5
+    2  3  6
+    >>> y
+    0    7
+    1    8
+    2    9
+    Name: c, dtype: int64
+    >>> X, y = df.rformula('b ~ .')
+    >>> X
+       a  c
+    0  1  7
+    1  2  8
+    2  3  9
+    >>> y
+    0    4
+    1    5
+    2    6
+    Name: b, dtype: int64
+    '''
+    target, indep_vars = re.sub(r'\s', '', formula).split('~')
+    y = df[target]
+    if indep_vars == '.':
+        X = df.drop(columns=target)
+    else:
+        X = df[indep_vars.split('+')]
+    return X, y
+
 def pipe(df: DataFrame, fn: Callable):
     return df.pipe(fn)
 
@@ -887,6 +951,7 @@ pd.DataFrame.n_outliers = n_outliers
 pd.DataFrame.nna = nnull
 pd.DataFrame.nnull = nnull
 pd.DataFrame.__rshift__ = pipe
+pd.DataFrame.rformula = rformula
 pd.DataFrame.ttest_2samp = ttest_2samp
 pd.DataFrame.ttest = ttest
 pd.DataFrame.unnest = unnest
