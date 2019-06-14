@@ -1,6 +1,7 @@
+from typing import Callable, List, Iterable, Dict, Any
 from functools import reduce, partial
 
-def pluck(d, *ks):
+def pluck(d: Dict, *ks):
     '''
     Pluck specified values from a dictionary.
 
@@ -22,7 +23,7 @@ def pluck(d, *ks):
     '''
     return [d[k] for k in ks]
 
-def comp(*fns):
+def comp(*fns: Iterable[Callable]):
     '''
     Returns a function that is the passed functions composed together. Functions
     are applied from right to left.
@@ -38,7 +39,6 @@ def comp(*fns):
     >>> def inc(n):
     ...     print(f'Incrementing {n}...')
     ...     return n + 1
-    >>> add1 = lambda n: n + 1
     >>> double_plus_one = comp(double, inc)
     >>> double_plus_one(3)
     Incrementing 3...
@@ -47,7 +47,7 @@ def comp(*fns):
     '''
     return partial(reduce, lambda x, f: f(x), reversed(fns))
 
-def partition(xs, chunksize):
+def partition(xs: Iterable, chunksize: int):
     '''
     Partition a sequence into smaller subsequences
 
