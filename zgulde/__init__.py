@@ -65,3 +65,23 @@ def partition(xs: Iterable, chunksize: int):
         yield xs[i:i + chunksize]
 
 chunk = partition
+
+def pipe(v: Any, *fns: List[Callable]):
+    '''
+    Thread a value through one or more functions.
+
+    Functions are applied left to right
+
+    >>> def double(n):
+    ...     print(f'Doubling {n}...')
+    ...     return n * 2
+    >>> def inc(n):
+    ...     print(f'Incrementing {n}...')
+    ...     return n + 1
+    >>> pipe(3, inc, double)
+    Incrementing 3...
+    Doubling 4...
+    8
+    '''
+
+    return reduce(lambda x, f: f(x), fns, v)
