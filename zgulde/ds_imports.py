@@ -15,6 +15,8 @@ import sys
 import os
 import itertools as it
 from functools import reduce, partial
+import math
+from math import sqrt, factorial
 
 import pandas as pd
 from pandas import DataFrame, Series
@@ -27,13 +29,17 @@ from matplotlib import cm
 import seaborn as sns
 
 from scipy import stats
+from scipy.stats import binom, norm, geom, poisson
 import statsmodels.api as sm
 
 from pydataset import data
 
 from zgulde import partition, chunk, comp, pluck, extend_pandas
+from zgulde.ds_util import MyRange
 
 # check if we're running interactively
 if hasattr(sys, 'ps1'):
     # turn on interactive mode in matplotlib
     plt.ion()
+
+r = MyRange()
