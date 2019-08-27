@@ -2,7 +2,7 @@ from typing import Callable, List, Iterable, Dict, Any, TypeVar, Tuple, Optional
 import itertools as it
 from functools import reduce, partial
 
-def pluck(d: Dict, *ks):
+def pluck(d: Dict, *ks: str):
     '''
     Pluck specified values from a dictionary.
 
@@ -24,7 +24,7 @@ def pluck(d: Dict, *ks):
     '''
     return [d[k] for k in ks]
 
-def comp(*fns: Iterable[Callable]):
+def comp(*fns: Callable):
     '''
     Returns a function that is the passed functions composed together. Functions
     are applied from right to left.
