@@ -119,7 +119,7 @@ def and_prev(xs: Iterable[A]) -> Iterable[Tuple[Optional[A], A]]:
     >>> list(and_prev([1, 2, 3]))
     [(None, 1), (1, 2), (2, 3)]
     '''
-    return zip(it.chain([None], xs), xs)
+    return zip(prepend(xs, None), xs)
 
 def and_next(xs: Iterable[A]) -> Iterable[Tuple[A, Optional[A]]]:
     '''
@@ -136,7 +136,7 @@ def and_next(xs: Iterable[A]) -> Iterable[Tuple[A, Optional[A]]]:
     >>> list(and_next([1, 2, 3]))
     [(1, 2), (2, 3), (3, None)]
     '''
-    return it.zip_longest(xs, it.islice(xs, 1, None))
+    return it.zip_longest(xs, drop(xs, 1))
 
 def prev_and_next(xs: Iterable[A]) -> Iterable[Tuple[Optional[A], A, Optional[A]]]:
     '''
@@ -155,6 +155,4 @@ def prev_and_next(xs: Iterable[A]) -> Iterable[Tuple[Optional[A], A, Optional[A]
     [(None, 1, 2), (1, 2, 3), (2, 3, None)]
     '''
     prev, current, next = it.tee(xs, 3)
-    return zip(it.chain([None], prev),
-               current,
-               it.chain(it.islice(next, 1, None), [None]))
+    return zip(prepend(prev, None), current, drop(append(next, None), 1))
