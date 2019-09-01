@@ -1,6 +1,7 @@
 from typing import Callable, List, Iterable, Dict, Any, TypeVar, Tuple, Optional, Sequence
 import itertools as it
 from functools import reduce, partial
+import collections
 
 def pluck(d: Dict, *ks: str):
     '''
@@ -87,6 +88,21 @@ def pipe(v: Any, *fns: Callable):
 
     return reduce(lambda x, f: f(x), fns, v)
 
+def take(xs, n):
+    return list(it.islice(xs, n))
+
+def tail(xs, n):
+    return list(collections.deque(xs, maxlen=n))
+
+def drop(xs, n):
+    return it.islice(xs, n, None)
+
+def prepend(xs, v):
+    return it.chain([v], xs)
+
+def append(xs, v):
+    return it.chain(xs, [v])
+
 A = TypeVar('A')
 def and_prev(xs: Iterable[A]) -> Iterable[Tuple[Optional[A], A]]:
     '''
@@ -142,4 +158,3 @@ def prev_and_next(xs: Iterable[A]) -> Iterable[Tuple[Optional[A], A, Optional[A]
     return zip(it.chain([None], prev),
                current,
                it.chain(it.islice(next, 1, None), [None]))
-

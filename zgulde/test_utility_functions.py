@@ -59,7 +59,7 @@ def test_pipe():
     def double(n):
         return n * 2
 
-    assert pipe(3) == 3
+    assert pipe(3) == 3, 'a value without any functions will simply be itself'
 
     assert pipe(3, increment) == 4
     assert pipe(3, double) == 6
@@ -106,3 +106,41 @@ def test_prev_and_next():
     assert next(g) == (2, 3, None)
 
     assert list(prev_and_next([1, 2, 3])) == [(None, 1, 2), (1, 2, 3), (2, 3, None)]
+
+def test_take():
+    l = [1, 2, 3]
+
+    assert take(l, 2) == [1, 2], 'takes the first n items'
+    assert take(l, 1) == [1], 'always returns a list'
+    assert take(l, 4) == [1, 2, 3], 'giving an n higher than the count is fine'
+
+    def counter():
+        n = 0
+        while True:
+            yield n
+            n += 1
+
+    assert take(counter(), 3) == [0, 1, 2], 'works with any iterable'
+    assert take(it.cycle([1]), 3) == [1, 1, 1], 'works with any iterable'
+
+def test_tail():
+    assert tail([1, 2, 3], 2) == [2, 3], 'takes the last n elements'
+    assert tail([1, 2, 3], 1) == [3], 'always returns a list'
+    assert tail([1, 2, 3], 4) == [1, 2, 3], 'giving an n higher than the count is fine'
+
+    assert tail(iter([1, 2, 3, 4]), 2) == [3, 4], 'works with iterables'
+
+def test_prepend():
+    assert list(prepend([1, 2, 3], 4)) == [4, 1, 2, 3], 'adds a single element to the beginning'
+    assert list(prepend(it.repeat(1, 2), 0)) == [0, 1, 1], 'works with iterables'
+
+def test_drop():
+    assert list(drop([1, 2, 3], 1)) == [2, 3], 'drops the first n elements'
+
+    xs = it.repeat(0, 5)
+    assert list(drop(xs, 3)) == [0, 0], 'works with iterables'
+
+def test_append():
+    assert list(append([1, 2, 3], 4)) == [1, 2, 3, 4], 'appends the given element to the list'
+    assert list(append(it.repeat(0, 2), 1)) == [0, 0, 1], 'works with iterables'
+
