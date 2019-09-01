@@ -15,6 +15,8 @@ FILE_EXTENSIONS = dict(
     sh=dict(comment='#', language='bash'),
     py=dict(comment='#', language='python'),
     js=dict(comment='//', language='javascript'),
+    sql=dict(comment='--', language='sql'),
+    php=dict(comment='//', language='php'),
 )
 
 def prev_and_next(xs):

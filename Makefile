@@ -1,4 +1,4 @@
-default: help
+default: test
 
 .PHONY: clean
 clean: ## Remove built docs and packaging artifacts
@@ -34,10 +34,15 @@ gh-pages: clean ## Build, commit, and push docs for the gh-pages branch
 	git checkout --force master
 	git push origin gh-pages --force
 
-.PHONY: test
-test: ## Run the tests for zgulde/extend_pandas and zgulde/__init__
+.PHONY: test test-em test-extend-pandas test-util
+test-em: ## Run the tests for the `em` module
+	pytest -q zgulde/em/test_extract_markdown.py
+test-extend-pandas: ## Run the doctests for the zgulde/extend_pandas module
 	python -m doctest -o NORMALIZE_WHITESPACE -o ELLIPSIS zgulde/extend_pandas.py
+test-util: ## Run the tests for zgulde/__init__
 	python -m doctest -o NORMALIZE_WHITESPACE -o ELLIPSIS zgulde/__init__.py
+	pytest -q zgulde/test_utility_functions.py
+test: test-em test-extend-pandas test-util ## Run all the tests
 
 .PHONY: lint-pytype lint-mypy lint
 lint-pytype:
