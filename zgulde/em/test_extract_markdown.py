@@ -11,7 +11,7 @@ def extract_markdown():
         input = textwrap.dedent(input).strip()
         expected = textwrap.dedent(expected).strip()
         if args is not None:
-            cmd += args
+            cmd += ' ' + args
         output = check_output(cmd.split(),
                               input=input.encode()).decode().strip()
         print('----- actual')
@@ -24,7 +24,7 @@ def extract_markdown():
 def test_categorizor():
     lines = textwrap.dedent('''
     #: # Hello, World
-    #: 
+    #:
     #: This is a demo.
 
     foo
@@ -175,3 +175,58 @@ def test_2_or_more_blanks_in_code_create_seperate_blocks(extract_markdown):
         '''
     )
     assert actual == expected
+
+def test_it_highlights_adds_the_given_language_to_fenced_code_blocks(extract_markdown):
+    actual, expected = extract_markdown('''
+        code
+        ''',
+        '''
+        ```bash
+        code
+        ```
+        ''',
+        args='-l bash'
+    )
+    assert actual == expected
+    actual, expected = extract_markdown('''
+        code
+        ''',
+        '''
+        ```bash
+        code
+        ```
+        ''',
+        args='--language bash'
+    )
+    assert actual == expected
+
+def test_it_accepts_a_different_doc_marker(extract_markdown):
+    actual, expected = extract_markdown('''
+        ## Here is some documentation
+        this is code
+        ''',
+        '''
+        Here is some documentation
+
+        ```
+        this is code
+        ```
+        ''',
+        args='-m ##'
+    )
+    assert actual == expected
+    actual, expected = extract_markdown('''
+        ## Here is some documentation
+        this is code
+        ''',
+        '''
+        Here is some documentation
+
+        ```
+        this is code
+        ```
+        ''',
+        args='--doc-marker ##'
+    )
+    assert actual == expected
+
