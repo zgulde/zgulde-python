@@ -30,7 +30,6 @@ import seaborn as sns
 
 from scipy import stats
 from scipy.stats import binom, norm, geom, poisson
-import statsmodels.api as sm
 
 from pydataset import data
 
@@ -43,3 +42,8 @@ if hasattr(sys, 'ps1'):
     plt.ion()
 
 r = MyRange()
+tips = data('tips')
+mpg = data('mpg')
+mtcars = data('mtcars')
+swiss = data('swiss')
+iris = data('iris').cleanup_column_names()

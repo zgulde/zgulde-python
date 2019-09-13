@@ -31,6 +31,7 @@ def comp(*fns: Callable):
     are applied from right to left.
 
     comp(f, g)(x) == f(g(x))
+    comp(f, g, h)(x) == f(g(h(x)))
 
     Example
     -------
@@ -46,8 +47,12 @@ def comp(*fns: Callable):
     Incrementing 3...
     Doubling 4...
     8
+    >>> double_plus_one(5)
+    Incrementing 5...
+    Doubling 6...
+    12
     '''
-    return partial(reduce, lambda x, f: f(x), reversed(fns))
+    return lambda x: reduce(lambda x, f: f(x), reversed(fns), x)
 
 def partition(xs: Sequence, chunksize: int):
     '''
