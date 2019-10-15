@@ -1,6 +1,23 @@
 import pandas as pd
 from pydataset import data
 
+def plot_dual_axis(df, x):
+    '''
+    plot_dual_axis(df, 'x')('y1')('y2')
+    '''
+    fig, ax1 = plt.subplots()
+    ax2 = ax1.twinx()
+
+    def plot_y2(y, *args, **kwargs):
+        ax2.plot(df[x], df[y], *args, **kwargs)
+        return fig
+
+    def plot_y1(y, *args, **kwargs):
+        ax1.plot(df[x], df[y], *args, **kwargs)
+        return plot_y2
+
+    return plot_y1
+
 # better interaction w/ sklearn.metrics.confusion_matrix, e.g. auto labelling
 def better_confusion_matrix(actual, predicted, labels=None):
     cm = pd.crosstab(actual, predicted)
