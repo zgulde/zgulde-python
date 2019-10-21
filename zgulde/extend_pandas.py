@@ -64,6 +64,7 @@ from functools import reduce, partial
 import itertools as it
 from scipy.stats import ttest_ind, chi2_contingency, ttest_1samp
 import re
+import sqlite3
 
 column_name_re = re.compile(r'[^a-zA-Z_0-9]')
 
@@ -930,6 +931,46 @@ def rformula(df, formula):
 def pipe(df: DataFrame, fn: Callable):
     return df.pipe(fn)
 
+def sql(df: DataFrame, query: str, table='df') -> pd.DataFrame:
+    '''
+    Run a sql query against the dataframe.
+
+    Anything that is valid in sqlite is supported.
+
+    Parameters
+    ----------
+
+    - query: The SQL query to run
+    - table: (optional) name of the table to call the dataframe. Defaults to `df`
+
+    Examples
+    --------
+
+    >>> df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': ['a', 'a', 'b']})
+    >>> df
+       a  b  c
+    0  1  4  a
+    1  2  5  a
+    2  3  6  b
+    >>> df.sql('SELECT * FROM df')
+       a  b  c
+    0  1  4  a
+    1  2  5  a
+    2  3  6  b
+    >>> df.sql('SELECT * FROM my_df', table='my_df')
+       a  b  c
+    0  1  4  a
+    1  2  5  a
+    2  3  6  b
+    >>> df.sql('SELECT c, AVG(a + b) FROM df GROUP BY c')
+       c  AVG(a + b)
+    0  a         6.0
+    1  b         9.0
+    '''
+    conn = sqlite3.connect(':memory:')
+    df.to_sql(table, conn, index=False)
+    return pd.read_sql(query, conn)
+
 pd.Series.bin = cut
 pd.Series.cut = cut
 pd.Series.get_scaler = get_scaler
@@ -956,6 +997,7 @@ pd.DataFrame.ttest_2samp = ttest_2samp
 pd.DataFrame.ttest = ttest
 pd.DataFrame.unnest = unnest
 pd.DataFrame.xtab = crosstab
+pd.DataFrame.sql = sql
 
 series_extensions = [
     cut,
@@ -980,4 +1022,5 @@ data_frame_extensions = [
     ttest,
     ttest_2samp,
     unnest,
+    sql,
 ]
