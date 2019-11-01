@@ -12,6 +12,7 @@ The following methods are added to all Series:
 - `log2`_: log base 2
 - `log`_: log base 10
 - `outliers`_: detect outliers
+- `top_n`_: encode as the most frequent n values or "Other"
 - `zscore`_: obtain the z-score for every value
 
 and the following are added to all DataFrames:
@@ -971,13 +972,47 @@ def sql(df: DataFrame, query: str, table='df') -> pd.DataFrame:
     df.to_sql(table, conn, index=False)
     return pd.read_sql(query, conn)
 
+def top_n(s: pd.Series, n=3, other_val='Other') -> pd.Series:
+    '''
+    Convert the series to the most frequent n values and use other_val for the
+    rest.
+
+    Parameters
+    ----------
+
+    - n: number of values to consider
+    - other_val: value that will be used for everything that isn't the most
+                 frequent n values
+
+    Returns
+    -------
+
+    A pandas Series
+
+    Examples
+    --------
+
+    >>> s = pd.Series(['a', 'a', 'b', 'b', 'c', 'd'])
+    >>> s.top_n(2)
+    0        a
+    1        a
+    2        b
+    3        b
+    4    Other
+    5    Other
+    dtype: object
+    '''
+    top_n = s.value_counts().index[:n]
+    return pd.Series(np.where(s.isin(top_n), s, other_val))
+
 pd.Series.bin = cut
 pd.Series.cut = cut
 pd.Series.get_scaler = get_scaler
 pd.Series.ln = ln
-pd.Series.log2 = log2
 pd.Series.log = log
+pd.Series.log2 = log2
 pd.Series.outliers = outliers
+pd.Series.top_n = top_n
 pd.Series.zscore = zscore
 
 pd.DataFrame.cleanup_column_names = cleanup_column_names
@@ -1006,6 +1041,7 @@ series_extensions = [
     log,
     log2,
     outliers,
+    top_n,
     zscore,
 ]
 
