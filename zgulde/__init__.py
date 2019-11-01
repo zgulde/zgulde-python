@@ -2,6 +2,20 @@ from typing import Callable, List, Iterable, Dict, Any, TypeVar, Tuple, Optional
 import itertools as it
 from functools import reduce, partial
 import collections
+import hashlib
+
+def md5(s):
+    return hashlib.md5(s.encode('utf8')).hexdigest()
+def sha256(s):
+    return hashlib.sha256(s.encode('utf8')).hexdigest()
+
+def slurp(fp):
+    with open(fp) as f:
+        return f.read()
+
+def spit(fp, content, mode='w+'):
+    with open(fp) as f:
+        f.write(content)
 
 def pluck(d: Dict, *ks: str):
     '''
