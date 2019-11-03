@@ -55,6 +55,6 @@ class MyRange:
     def __getitem__(_, aslice: slice):
         start = aslice.start if aslice.start is not None else 0
         step = aslice.step if aslice.step is not None else 1
-        stop = aslice.stop + 1
+        stop = aslice.stop + 1 if aslice.stop is not None else 1
         return list(range(start, stop, step))
 

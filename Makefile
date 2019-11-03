@@ -45,7 +45,9 @@ test-util: ## Run the tests for zgulde/__init__
 test-flashcards:
 	pytest -q zgulde/flashcards/test_flashcards.py
 	pytype zgulde/flashcards/__main__.py
-test: test-em test-extend-pandas test-util test-flashcards ## Run all the tests
+test-my-range:
+	pytest -q --disable-warnings zgulde/test_my_range.py
+test: test-em test-extend-pandas test-util test-my-range test-flashcards ## Run all the tests
 
 .PHONY: lint-pytype lint-mypy lint
 lint-pytype:
