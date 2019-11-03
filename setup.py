@@ -11,7 +11,7 @@ setuptools.setup(
     description='A Small Person Utility Library',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://gitlab.com/zgulde/zgulde-python',
+    url='https://github.com/zgulde/zgulde-python',
     packages=setuptools.find_packages(),
     classifiers=[
         'Programming Language :: Python :: 3',
