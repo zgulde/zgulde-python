@@ -1,4 +1,4 @@
-default: test
+default: test-extend-pandas lint
 
 .PHONY: clean
 clean: ## Remove built docs and packaging artifacts

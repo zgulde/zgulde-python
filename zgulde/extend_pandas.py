@@ -27,6 +27,8 @@ and the following are added to all DataFrames:
 - `n_outliers`_: summarize the number of outliers in each numeric column
 - `ttest`_: run multiple 1 sample t-tests for multiple categories
 - `ttest_2samp`_: run multiple 2 sample t-tests for multiple categories
+- `select`_: select and rename columns in a dataframe
+- `sql`_: run SQL queries against a dataframe
 - `unnest`_: handle multiple values in a single cell
 
 It also defines the left and right shift operators to be similar to
@@ -1005,6 +1007,53 @@ def top_n(s: pd.Series, n=3, other_val='Other') -> pd.Series:
     top_n = s.value_counts().index[:n]
     return pd.Series(np.where(s.isin(top_n), s, other_val))
 
+def select(df, *args: str, **kwargs: str) -> pd.DataFrame:
+    '''
+    Return specified columns from a dataframe, optionally renaming some.
+
+    Parameters
+    ----------
+
+    - args: strings that are column names to include
+    - kwargs: any additional columns to rename
+
+    Returns
+    -------
+
+    A subset of the dataframe
+
+    Examples
+    --------
+
+    >>> df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]})
+    >>> df
+       a  b  c
+    0  1  4  7
+    1  2  5  8
+    2  3  6  9
+    >>> df.select('a')
+       a
+    0  1
+    1  2
+    2  3
+    >>> df.select('a', 'b')
+       a  b
+    0  1  4
+    1  2  5
+    2  3  6
+    >>> df.select('a', c='the_letter_c')
+       a  the_letter_c
+    0  1             7
+    1  2             8
+    2  3             9
+    >>> df.select(a='A', b='BBB')
+       A  BBB
+    0  1    4
+    1  2    5
+    2  3    6
+    '''
+    return df[[*args, *kwargs.keys()]].rename(columns=kwargs)
+
 pd.Series.bin = cut
 pd.Series.cut = cut
 pd.Series.get_scaler = get_scaler
@@ -1032,6 +1081,7 @@ pd.DataFrame.ttest_2samp = ttest_2samp
 pd.DataFrame.ttest = ttest
 pd.DataFrame.unnest = unnest
 pd.DataFrame.xtab = crosstab
+pd.DataFrame.select = select
 pd.DataFrame.sql = sql
 
 series_extensions = [
@@ -1058,5 +1108,6 @@ data_frame_extensions = [
     ttest,
     ttest_2samp,
     unnest,
+    select,
     sql,
 ]
