@@ -68,6 +68,7 @@ import itertools as it
 from scipy.stats import ttest_ind, chi2_contingency, ttest_1samp
 import re
 import sqlite3
+from tempfile import NamedTemporaryFile
 
 column_name_re = re.compile(r'[^a-zA-Z_0-9]')
 
@@ -934,17 +935,23 @@ def rformula(df, formula):
 def pipe(df: DataFrame, fn: Callable):
     return df.pipe(fn)
 
-def sql(df: DataFrame, query: str, table='df') -> pd.DataFrame:
+def sql(df: DataFrame, query: str, table='df', in_memory=True, index=False) -> pd.DataFrame:
     '''
-    Run a sql query against the dataframe.
+    Run a SQL query against the dataframe.
 
-    Anything that is valid in sqlite is supported.
+    The dataframe is converted to a sqlite database and the provided query is
+    run against it. As such, any SQL that is valid in sqlite is supported.
 
     Parameters
     ----------
 
     - query: The SQL query to run
     - table: (optional) name of the table to call the dataframe. Defaults to `df`
+    - in_memory: whether or not the sqlite database should be in memory or
+                 written to an external file. If False, a temporary file will be
+                 created and cleaned up after the query is run.
+    - index: whether or not to include the dataframe's index in the table that
+             is queried against.
 
     Examples
     --------
@@ -970,9 +977,15 @@ def sql(df: DataFrame, query: str, table='df') -> pd.DataFrame:
     0  a         6.0
     1  b         9.0
     '''
-    conn = sqlite3.connect(':memory:')
-    df.to_sql(table, conn, index=False)
-    return pd.read_sql(query, conn)
+    if in_memory:
+        conn = sqlite3.connect(':memory:')
+        df.to_sql(table, conn, index=index)
+        return pd.read_sql(query, conn)
+    else:
+        with NamedTemporaryFile() as f:
+            conn = sqlite3.connect(f.name)
+            df.to_sql(table, conn, index=index)
+            return pd.read_sql(query, conn)
 
 def top_n(s: pd.Series, n=3, other_val='Other') -> pd.Series:
     '''
