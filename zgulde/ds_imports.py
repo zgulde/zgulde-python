@@ -47,3 +47,12 @@ mpg = data('mpg')
 mtcars = data('mtcars')
 swiss = data('swiss')
 iris = data('iris').cleanup_column_names()
+
+# plotting style defaults
+plt.rc('patch', edgecolor='black', force_edgecolor=True, facecolor='firebrick')
+plt.rc('axes', grid=True)
+plt.rc('grid', linestyle=':', linewidth=.8, alpha=.7)
+plt.rc('axes.spines', right=False, top=False)
+plt.rc('figure', figsize=(11, 8))
+plt.rc('font', size=12.0)
+plt.rc('hist', bins=25)
