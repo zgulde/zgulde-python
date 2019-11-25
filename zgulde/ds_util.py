@@ -58,3 +58,8 @@ class MyRange:
         stop = aslice.stop + 1 if aslice.stop is not None else 1
         return list(range(start, stop, step))
 
+# https://stackoverflow.com/questions/50559078/generating-random-dates-within-a-given-range-in-pandas
+def rand_dates(start, end, n):
+    start_u = pd.to_datetime(start).value // 10**9
+    end_u = pd.to_datetime(end).value // 10**9
+    return pd.DatetimeIndex((10**9*np.random.randint(start_u, end_u, n)).view('M8[ns]'))
