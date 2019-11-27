@@ -31,10 +31,24 @@ import seaborn as sns
 from scipy import stats
 from scipy.stats import binom, norm, geom, poisson
 
+import sklearn
+from sklearn.model_selection import GridSearchCV, train_test_split, cross_val_score
+from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
+from sklearn.svm import SVC, SVR
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.cluster import DBSCAN, KMeans, dbscan, k_means
+from sklearn.preprocessing import scale, StandardScaler
+from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
+from sklearn.metrics import accuracy_score, precision_score, recall_score
+
+from sklearn.pipeline import Pipeline
+
 from pydataset import data
 
 from zgulde import partition, chunk, comp, pluck, extend_pandas
-from zgulde.ds_util import MyRange
+from zgulde.ds_util import *
 
 # check if we're running interactively
 if hasattr(sys, 'ps1'):
