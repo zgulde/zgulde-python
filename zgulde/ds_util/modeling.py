@@ -1,9 +1,16 @@
 import math
 import numpy as np
+import pandas as pd
+
+from typing import List, Tuple, Dict, Union
+
+import sklearn
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 from sklearn.metrics import accuracy_score, precision_score, recall_score
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
-from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
+from sklearn.svm import SVC, SVR
 from sklearn.model_selection import GridSearchCV
 
 def tree(df, rformula, **kwargs):
@@ -73,3 +80,48 @@ def linear_regression(X, y, **kwargs):
         'mae': mean_absolute_error(y, yhat),
         'coef': coefs.sort_values(),
     }
+
+
+def cv_results_to_df(grid: GridSearchCV) -> pd.DataFrame:
+    results = grid.cv_results_
+    params_and_scores = zip(results["params"], results["mean_test_score"])
+    df = pd.DataFrame([dict(**p, score=s) for p, s in params_and_scores])
+    df["model"] = grid.best_estimator_.__class__.__name__
+    return df
+
+
+GridCandidates = List[
+    Tuple[sklearn.base.BaseEstimator, Dict[str, List[Union[str, int]]]]
+]
+
+
+def multi_grid_search(models: GridCandidates, X, y, cv=4) -> pd.DataFrame:
+    return pd.concat([
+        cv_results_to_df(GridSearchCV(model, params, cv=cv).fit(X, y))
+        for model, params in models
+    ])
+
+def inspect_coefs(lm, X):
+    return pd.Series(dict(zip(X.columns, lm.coefs_))).sort_values()
+
+def inspect_feature_importances(tree, X):
+    return pd.Series(dict(zip(X.columns, tree.feature_importances_))).sort_values()
+
+
+classification_models = [
+    (DecisionTreeClassifier(), {"max_depth": range(1, 11)}),
+    (KNeighborsClassifier(), {"n_neighbors": range(1, 21)}),
+    (LogisticRegression(), {"C": [0.01, 0.1, 1, 10, 100, 1000], "solver": ["lbfgs"]}),
+    (SVC(), {"kernel": ["rbf", "linear"]}),
+    (SVC(), {"kernel": ["poly"], "degree": [2]}),
+]
+
+regression_models = [
+    (DecisionTreeRegressor(), {"max_depth": range(1, 11)}),
+    (KNeighborsRegressor(), {"n_neighbors": range(1, 11)}),
+    (LinearRegression(), {}),
+    (Ridge(), {"alpha": [0.01, 0.1, 1, 10, 100, 1000]}),
+    (SVR(), {"kernel": ["rbf", "linear"]}),
+    (SVR(), {"kernel": ["poly"], "degree": [2]}),
+]
+
