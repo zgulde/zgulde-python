@@ -102,7 +102,11 @@ def multi_grid_search(models: GridCandidates, X, y, cv=4) -> pd.DataFrame:
     ])
 
 def inspect_coefs(lm, X):
-    return pd.Series(dict(zip(X.columns, lm.coefs_))).sort_values()
+    coef = lm.coef_
+    if coef.shape[0] > 1:
+        return pd.DataFrame(coef, index=lm.classes_, columns=X.columns)
+    else:
+        return pd.Series(dict(zip(X.columns, lm.coef_.ravel()))).sort_values()
 
 def inspect_feature_importances(tree, X):
     return pd.Series(dict(zip(X.columns, tree.feature_importances_))).sort_values()
