@@ -13,6 +13,9 @@ from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.svm import SVC, SVR
 from sklearn.model_selection import GridSearchCV
 
+def residuals(model, X, y):
+    return y - model.predict(X)
+
 def tree(df, rformula, **kwargs):
     X, y = df.rformula(rformula)
     if np.issubdtype(y.dtype, np.number):
@@ -114,7 +117,7 @@ def inspect_feature_importances(tree, X):
 
 classification_models = [
     (DecisionTreeClassifier(), {"max_depth": range(1, 11)}),
-    (KNeighborsClassifier(), {"n_neighbors": range(1, 21)}),
+    (KNeighborsClassifier(), {"n_neighbors": range(1, 11)}),
     (LogisticRegression(), {"C": [0.01, 0.1, 1, 10, 100, 1000], "solver": ["lbfgs"]}),
     (SVC(), {"kernel": ["rbf", "linear"]}),
     (SVC(), {"kernel": ["poly"], "degree": [2]}),
