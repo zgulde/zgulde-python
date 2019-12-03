@@ -17,6 +17,9 @@ def hl_all_matches(
     Does not handle nested groups.
     """
 
+    if regexp == "":
+        raise ValueError("regexp must not be an empty string")
+
     output = ""
 
     m = re.search(regexp, subject)
@@ -135,8 +138,9 @@ def hl_matches_nb(regexp, subject):
     )
     return nb_HTML(output)
 
+
 def hl_matches_plaintext(regexp, subject):
-    '''
+    """
     Highlightes a regular expression's matches in `subject` with plaintext
     markers.
 
@@ -149,7 +153,7 @@ def hl_matches_plaintext(regexp, subject):
     '[a(b)c]'
     >>> hl(r'^(\d+).*?(\d+)$', '123 broadway st san antonio tx 78205')
     '[(123) broadway st san antonio tx (78205)]'
-    '''
+    """
     return hl_matches(
         regexp,
         subject,
@@ -163,7 +167,7 @@ def hl_matches_plaintext(regexp, subject):
 
 
 def hl_all_matches_plaintext(regexp, subject):
-    '''
+    """
     Highlightes all of a regular expression's matches in `subject` with
     plaintext markers.
 
@@ -176,7 +180,7 @@ def hl_all_matches_plaintext(regexp, subject):
     '[a(b)c]'
     >>> hl(r'^(\d+).*?(\d+)$', '123 broadway st san antonio tx 78205')
     '[(123) broadway st san antonio tx (78205)]'
-    '''
+    """
     return hl_all_matches(
         regexp,
         subject,
