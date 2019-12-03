@@ -65,7 +65,7 @@ def hl_matches_cli(regexp, subject):
 
     Uses python's `re.search` under the hood.
 
-    >>> from zgulde.hl_matches import hl_matches
+    >>> from zgulde.hl_matches import hl_matches_cli as hl_matches
     >>> hl_matches(r'^.', 'abc')
     >>> hl_matches(r'^(\d).*?(\d+)$', '123 broadway st san antonio tx 78205')
 
@@ -90,7 +90,7 @@ def hl_matches_nb(regexp, subject):
 
     Uses python's `re.search` under the hood.
 
-    >>> from zgulde.hl_matches import hl_matches
+    >>> from zgulde.hl_matches import hl_matches_nb as hl_matches
     >>> hl_matches(r'^.', 'abc')
     >>> hl_matches(r'^(\d).*?(\d+)$', '123 broadway st san antonio tx 78205')
 
