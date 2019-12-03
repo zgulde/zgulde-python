@@ -1,4 +1,4 @@
-default: test-extend-pandas lint
+default: test-hl-matches
 
 .PHONY: clean
 clean: ## Remove built docs and packaging artifacts
@@ -47,7 +47,9 @@ test-flashcards:
 	pytype zgulde/flashcards/__main__.py
 test-my-range:
 	pytest -q --disable-warnings zgulde/test_my_range.py
-test: test-em test-extend-pandas test-util test-my-range test-flashcards ## Run all the tests
+test-hl-matches:
+	python -m doctest -o NORMALIZE_WHITESPACE -o ELLIPSIS zgulde/hl_matches.py
+test: test-em test-extend-pandas test-util test-my-range test-flashcards test-hl-matches ## Run all the tests
 
 .PHONY: lint-pytype lint-mypy lint
 lint-pytype:

@@ -3,6 +3,43 @@ from prompt_toolkit import print_formatted_text, HTML as cli_HTML
 import re
 
 
+def hl_all_matches(
+    regexp: str,
+    subject: str,
+    start: str,
+    end: str,
+    groupstart: str,
+    groupend: str,
+    initial_output="",
+    closing_output="",
+) -> str:
+    """
+    Does not handle nested groups.
+    """
+
+    output = ""
+
+    m = re.search(regexp, subject)
+    while m is not None:
+        mstart, mend = m.span()
+        output += hl_matches(
+            regexp,
+            subject[:mend],
+            start,
+            end,
+            groupstart,
+            groupend,
+            initial_output="",
+            closing_output="",
+        )
+        subject = subject[mend:]
+        if subject == "":
+            break
+        m = re.search(regexp, subject)
+
+    return initial_output + output + subject + closing_output
+
+
 def hl_matches(
     regexp: str,
     subject: str,
@@ -65,10 +102,6 @@ def hl_matches_cli(regexp, subject):
 
     Uses python's `re.search` under the hood.
 
-    >>> from zgulde.hl_matches import hl_matches_cli as hl_matches
-    >>> hl_matches(r'^.', 'abc')
-    >>> hl_matches(r'^(\d).*?(\d+)$', '123 broadway st san antonio tx 78205')
-
     The entire match will be highlighted in bold, the capture groups will be
     red.
     """
@@ -86,17 +119,86 @@ def hl_matches_cli(regexp, subject):
 def hl_matches_nb(regexp, subject):
     """
     Highlight a regular expressions matches in a string. Does not handle nested
-    groups.
-
-    Uses python's `re.search` under the hood.
-
-    >>> from zgulde.hl_matches import hl_matches_nb as hl_matches
-    >>> hl_matches(r'^.', 'abc')
-    >>> hl_matches(r'^(\d).*?(\d+)$', '123 broadway st san antonio tx 78205')
+    groups. Uses python's `re.search` under the hood.
 
     The entire match will be underlined, and the capture groups will be red.
     """
     output = hl_matches(
+        regexp,
+        subject,
+        start='<span style="text-decoration: underline">',
+        end="</span>",
+        groupstart='<span style="color: firebrick">',
+        groupend="</span>",
+        initial_output='<div style="font-family: monospace; letter-spacing: 3px; font-size: 24px; line-height: 36px;">',
+        closing_output="</div>",
+    )
+    return nb_HTML(output)
+
+def hl_matches_plaintext(regexp, subject):
+    '''
+    Highlightes a regular expression's matches in `subject` with plaintext
+    markers.
+
+    >>> from zgulde.hl_matches import hl_matches_plaintext as hl
+    >>> hl(r'.+', 'abc')
+    '[abc]'
+    >>> hl(r'.', 'abc')
+    '[a]bc'
+    >>> hl(r'.(.).', 'abc')
+    '[a(b)c]'
+    >>> hl(r'^(\d+).*?(\d+)$', '123 broadway st san antonio tx 78205')
+    '[(123) broadway st san antonio tx (78205)]'
+    '''
+    return hl_matches(
+        regexp,
+        subject,
+        start="[",
+        end="]",
+        groupstart="(",
+        groupend=")",
+        initial_output="",
+        closing_output="",
+    )
+
+
+def hl_all_matches_plaintext(regexp, subject):
+    '''
+    Highlightes all of a regular expression's matches in `subject` with
+    plaintext markers.
+
+    >>> from zgulde.hl_matches import hl_all_matches_plaintext as hl
+    >>> hl(r'.+', 'abc')
+    '[abc]'
+    >>> hl(r'.', 'abc')
+    '[a][b][c]'
+    >>> hl(r'.(.).', 'abc')
+    '[a(b)c]'
+    >>> hl(r'^(\d+).*?(\d+)$', '123 broadway st san antonio tx 78205')
+    '[(123) broadway st san antonio tx (78205)]'
+    '''
+    return hl_all_matches(
+        regexp,
+        subject,
+        start="[",
+        end="]",
+        groupstart="(",
+        groupend=")",
+        initial_output="",
+        closing_output="",
+    )
+
+
+def hl_all_matches_nb(regexp, subject):
+    """
+    Highlight a regular expressions matches in a string. Does not handle nested
+    groups.
+
+    Uses python's `re.search` under the hood.
+
+    The entire match will be underlined, and the capture groups will be red.
+    """
+    output = hl_all_matches(
         regexp,
         subject,
         start='<span style="text-decoration: underline">',
