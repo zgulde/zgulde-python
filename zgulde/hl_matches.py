@@ -1,3 +1,29 @@
+"""
+A cool little module for visually showing regular expression match results.
+Intented for interactive regexp iteration.
+
+There are 3 main sets of functions for viewing matches in different
+environments: jupyter notebooks, command line interfaces, and plaintext.
+
+In addition to the 3 different environments, each function comes in 2 flavors
+for highlighting all of the matches, or just the first match in the string.
+
+- For notebooks: `hl_matches_nb` and `hl_all_matches_nb`
+- For the command line: `hl_matches_cli` and `hl_all_matches_cli`
+- For plaintext results: `hl_all_matches_plaintext` and `hl_all_matches_plaintext`
+
+For example:
+
+>>> from zgulde.hl_matches import hl_all_matches_plaintext as hl
+>>> # square brackets, [], mark the overall match start and end
+>>> # parenthesis, (), mark capture group starts and ends
+>>> hl(r'.+', 'abcdef')
+'[abcdef]'
+>>> hl(r'\w(\w{2})', 'abcdef')
+'[a(bc)][d(ef)]'
+
+Note that currently, no special highlighting is done for nested groups.
+"""
 from IPython.display import display, HTML as nb_HTML
 from prompt_toolkit import print_formatted_text, HTML as cli_HTML
 import re
@@ -6,8 +32,11 @@ from typing import Iterator, Tuple, List
 
 MatchIndexes = List[int]
 
-def _starts_ends_overall(m: re.Match) -> Tuple[MatchIndexes, MatchIndexes, MatchIndexes]:
-    '''
+
+def _starts_ends_overall(
+    m: re.Match
+) -> Tuple[MatchIndexes, MatchIndexes, MatchIndexes]:
+    """
     Extracts indices from a match object.
 
     Returns
@@ -20,7 +49,7 @@ def _starts_ends_overall(m: re.Match) -> Tuple[MatchIndexes, MatchIndexes, Match
     >>> m = re.match(r'.', 'abc')
     >>> _starts_ends_overall(m)
     ([], [], [0, 1])
-    '''
+    """
     overall_start, overall_end = m.span()
     n_matches = len(m.groups())
 
@@ -30,8 +59,10 @@ def _starts_ends_overall(m: re.Match) -> Tuple[MatchIndexes, MatchIndexes, Match
     return starts, ends, [overall_start, overall_end]
 
 
-def _starts_ends_overalls(matches: Iterator[re.Match]) -> Tuple[MatchIndexes, MatchIndexes, MatchIndexes, MatchIndexes]:
-    '''
+def _starts_ends_overalls(
+    matches: Iterator[re.Match]
+) -> Tuple[MatchIndexes, MatchIndexes, MatchIndexes, MatchIndexes]:
+    """
     >>> matches = re.finditer(r'.', 'abc')
     >>> _starts_ends_overalls(matches)
     ([], [], [0, 1, 2], [1, 2, 3])
@@ -41,7 +72,7 @@ def _starts_ends_overalls(matches: Iterator[re.Match]) -> Tuple[MatchIndexes, Ma
     >>> matches = re.finditer(r'.(.)', 'abcdef')
     >>> _starts_ends_overalls(matches)
     ([1, 3, 5], [2, 4, 6], [0, 2, 4], [2, 4, 6])
-    '''
+    """
     groupstarts = []
     groupends = []
     overallstarts = []
@@ -53,7 +84,8 @@ def _starts_ends_overalls(matches: Iterator[re.Match]) -> Tuple[MatchIndexes, Ma
         overallends += [end]
     return groupstarts, groupends, overallstarts, overallends
 
-def hl_all_matches(
+
+def _hl_all_matches(
     regexp: str,
     subject: str,
     start: str,
@@ -93,7 +125,8 @@ def hl_all_matches(
     output += closing_output
     return output
 
-def hl_matches(
+
+def _hl_matches(
     regexp: str,
     subject: str,
     start: str,
@@ -144,16 +177,15 @@ def hl_matches(
 
 def hl_matches_cli(regexp, subject):
     """
-    Highlight a regular expressions matches in a string.
+    Highlight a regular expressions first match in a string. The entire match
+    will be underlined, the capture groups will be red.
 
-    Currently only works in terminal environments (read: this function won't
-    work in a jupyter notebook) and does not handle nested groups.
+    This function only works in terminal environments (read: this function won't
+    work in a jupyter notebook).
 
     Uses python's `re.search` under the hood.
-
-    The entire match will be underlined, the capture groups will be red.
     """
-    output = hl_matches(
+    output = _hl_matches(
         regexp,
         subject,
         start="<u>",
@@ -166,12 +198,14 @@ def hl_matches_cli(regexp, subject):
 
 def hl_matches_nb(regexp, subject):
     """
-    Highlight a regular expressions matches in a string. Does not handle nested
-    groups. Uses python's `re.search` under the hood.
+    Highlight a regular expressions first match in a string. The entire match will
+    be underlined, and the capture groups will be red.
 
-    The entire match will be underlined, and the capture groups will be red.
+    This function will only work in jupyter notebooks.
+
+    Uses python's `re.search` under the hood.
     """
-    output = hl_matches(
+    output = _hl_matches(
         regexp,
         subject,
         start='<span style="text-decoration: underline">',
@@ -186,8 +220,7 @@ def hl_matches_nb(regexp, subject):
 
 def hl_matches_plaintext(regexp, subject):
     """
-    Highlightes a regular expression's matches in `subject` with plaintext
-    markers.
+    Highlightes a regular expression's first match with plaintext markers.
 
     >>> from zgulde.hl_matches import hl_matches_plaintext as hl
     >>> hl(r'.+', 'abc')
@@ -199,7 +232,7 @@ def hl_matches_plaintext(regexp, subject):
     >>> hl(r'^(\d+).*?(\d+)$', '123 broadway st san antonio tx 78205')
     '[(123) broadway st san antonio tx (78205)]'
     """
-    return hl_matches(
+    return _hl_matches(
         regexp,
         subject,
         start="[",
@@ -230,7 +263,7 @@ def hl_all_matches_plaintext(regexp, subject):
     >>> hl(r'^.', 'abc')
     '[a]bc'
     """
-    return hl_all_matches(
+    return _hl_all_matches(
         regexp,
         subject,
         start="[",
@@ -244,14 +277,14 @@ def hl_all_matches_plaintext(regexp, subject):
 
 def hl_all_matches_nb(regexp, subject):
     """
-    Highlight a regular expressions matches in a string. Does not handle nested
-    groups.
+    Highlight a regular expressions matches in a string. Entire matches will be
+    underlined, and capture groups will be red.
 
-    Uses python's `re.search` under the hood.
+    This function will only work in jupyter notebooks.
 
-    The entire match will be underlined, and the capture groups will be red.
+    Uses python's `re.finditer` under the hood.
     """
-    output = hl_all_matches(
+    output = _hl_all_matches(
         regexp,
         subject,
         start='<span style="text-decoration: underline">',
@@ -263,19 +296,18 @@ def hl_all_matches_nb(regexp, subject):
     )
     return nb_HTML(output)
 
+
 def hl_all_matches_cli(regexp, subject):
     """
-    Highlight a regular expressions matches in a string.
+    Highlight a regular expressions matches in a string. Entire matches will be
+    underlined, and capture groups will be red.
 
-    Currently only works in terminal environments (read: this function won't
-    work in a jupyter notebook) and does not have special highlighting for
-    nested groups.
+    This function will only work in command line interfaces (read: not in
+    jupyter notebooks).
 
     Uses python's `re.finditer` under the hood.
-
-    The entire match will be underlined, the capture groups will be red.
     """
-    output = hl_all_matches(
+    output = _hl_all_matches(
         regexp,
         subject,
         start="<u>",
