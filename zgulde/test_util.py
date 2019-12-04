@@ -1,21 +1,24 @@
 import pytest
 from zgulde.util import *
 
+
 def test_plucking():
-    d = {'x': 1, 'y': 2}
+    d = {"x": 1, "y": 2}
 
-    assert pluck(d, 'x') == [1]
-    assert pluck(d, 'y', 'x') == [2, 1]
+    assert pluck(d, "x") == [1]
+    assert pluck(d, "y", "x") == [2, 1]
 
-    x, y = pluck(d, 'x', 'y')
+    x, y = pluck(d, "x", "y")
     assert x == 1
     assert y == 2
 
     assert pluck(d) == []
 
+
 def test_compose_functions():
     def increment(n):
         return n + 1
+
     def double(n):
         return n * 2
 
@@ -32,6 +35,7 @@ def test_compose_functions():
     assert comp(increment)(1) == 2
 
     assert comp()(4) == 4
+
 
 def test_partition():
     l = [1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -51,15 +55,17 @@ def test_partition():
     assert list(partition(l, 9)) == [[1, 2, 3, 4, 5, 6, 7, 8, 9]]
     assert list(partition(l, 10)) == [[1, 2, 3, 4, 5, 6, 7, 8, 9]]
 
-    assert chunk == partition, 'It has another name'
+    assert chunk == partition, "It has another name"
+
 
 def test_pipe():
     def increment(n):
         return n + 1
+
     def double(n):
         return n * 2
 
-    assert pipe(3) == 3, 'a value without any functions will simply be itself'
+    assert pipe(3) == 3, "a value without any functions will simply be itself"
 
     assert pipe(3, increment) == 4
     assert pipe(3, double) == 6
@@ -73,6 +79,7 @@ def test_pipe():
     assert pipe(3, double, double, increment, increment) == 14
     assert pipe(3, increment, increment, double, double) == 20
 
+
 def test_and_prev():
     l = [1, 2, 3, 4, 5]
 
@@ -84,6 +91,7 @@ def test_and_prev():
     assert next(g) == (4, 5)
 
     assert list(and_prev(l)) == [(None, 1), (1, 2), (2, 3), (3, 4), (4, 5)]
+
 
 def test_and_next():
     l = [1, 2, 3, 4, 5]
@@ -97,6 +105,7 @@ def test_and_next():
 
     assert list(and_next(l)) == [(1, 2), (2, 3), (3, 4), (4, 5), (5, None)]
 
+
 def test_prev_and_next():
     l = [1, 2, 3]
 
@@ -107,12 +116,13 @@ def test_prev_and_next():
 
     assert list(prev_and_next([1, 2, 3])) == [(None, 1, 2), (1, 2, 3), (2, 3, None)]
 
+
 def test_take():
     l = [1, 2, 3]
 
-    assert take(l, 2) == [1, 2], 'takes the first n items'
-    assert take(l, 1) == [1], 'always returns a list'
-    assert take(l, 4) == [1, 2, 3], 'giving an n higher than the count is fine'
+    assert take(l, 2) == [1, 2], "takes the first n items"
+    assert take(l, 1) == [1], "always returns a list"
+    assert take(l, 4) == [1, 2, 3], "giving an n higher than the count is fine"
 
     def counter():
         n = 0
@@ -120,33 +130,49 @@ def test_take():
             yield n
             n += 1
 
-    assert take(counter(), 3) == [0, 1, 2], 'works with any iterable'
-    assert take(it.cycle([1]), 3) == [1, 1, 1], 'works with any iterable'
+    assert take(counter(), 3) == [0, 1, 2], "works with any iterable"
+    assert take(it.cycle([1]), 3) == [1, 1, 1], "works with any iterable"
+
 
 def test_tail():
-    assert tail([1, 2, 3], 2) == [2, 3], 'takes the last n elements'
-    assert tail([1, 2, 3], 1) == [3], 'always returns a list'
-    assert tail([1, 2, 3], 4) == [1, 2, 3], 'giving an n higher than the count is fine'
+    assert tail([1, 2, 3], 2) == [2, 3], "takes the last n elements"
+    assert tail([1, 2, 3], 1) == [3], "always returns a list"
+    assert tail([1, 2, 3], 4) == [1, 2, 3], "giving an n higher than the count is fine"
 
-    assert tail(iter([1, 2, 3, 4]), 2) == [3, 4], 'works with iterables'
+    assert tail(iter([1, 2, 3, 4]), 2) == [3, 4], "works with iterables"
+
 
 def test_prepend():
-    assert list(prepend([1, 2, 3], 4)) == [4, 1, 2, 3], 'adds a single element to the beginning'
-    assert list(prepend(it.repeat(1, 2), 0)) == [0, 1, 1], 'works with iterables'
+    assert list(prepend([1, 2, 3], 4)) == [
+        4,
+        1,
+        2,
+        3,
+    ], "adds a single element to the beginning"
+    assert list(prepend(it.repeat(1, 2), 0)) == [0, 1, 1], "works with iterables"
+
 
 def test_drop():
-    assert list(drop([1, 2, 3], 1)) == [2, 3], 'drops the first n elements'
+    assert list(drop([1, 2, 3], 1)) == [2, 3], "drops the first n elements"
 
     xs = it.repeat(0, 5)
-    assert list(drop(xs, 3)) == [0, 0], 'works with iterables'
+    assert list(drop(xs, 3)) == [0, 0], "works with iterables"
+
 
 def test_append():
-    assert list(append([1, 2, 3], 4)) == [1, 2, 3, 4], 'appends the given element to the list'
-    assert list(append(it.repeat(0, 2), 1)) == [0, 0, 1], 'works with iterables'
+    assert list(append([1, 2, 3], 4)) == [
+        1,
+        2,
+        3,
+        4,
+    ], "appends the given element to the list"
+    assert list(append(it.repeat(0, 2), 1)) == [0, 0, 1], "works with iterables"
+
 
 @pytest.fixture()
 def r():
     return MyRange()
+
 
 def test_it_generates_a_range(r):
     assert r[5:8] == [5, 6, 7, 8]

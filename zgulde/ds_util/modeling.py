@@ -13,51 +13,58 @@ from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.svm import SVC, SVR
 from sklearn.model_selection import GridSearchCV
 
+
 def model(X, y, m, **kwargs):
     return m(**kwargs).fit(X, y)
 
+
 def residuals(model, X, y):
     return y - model.predict(X)
+
 
 def tree(df, rformula, **kwargs):
     X, y = df.rformula(rformula)
     if np.issubdtype(y.dtype, np.number):
         return dtree_regressor(X, y, **kwargs)
     else:
-        y = y.astype('category').cat.codes
+        y = y.astype("category").cat.codes
         return dtree_classifier(X, y, **kwargs)
+
 
 def lr(df, rformula, **kwargs):
     X, y = df.rformula(rformula)
     if np.issubdtype(y.dtype, np.number):
         return linear_regression(X, y, **kwargs)
     else:
-        y = y.astype('category').cat.codes
+        y = y.astype("category").cat.codes
         return logistic_regression(X, y, **kwargs)
+
 
 def logistic_regression(X, y, **kwargs):
     lr = LogisticRegression(**kwargs).fit(X, y)
     yhat = lr.predict(X)
     coefs = pd.Series(dict(zip(X.columns, lr.coef_[0])))
     return {
-        'model': lr,
-        'accuracy': accuracy_score(y, yhat),
-        'precision': precision_score(y, yhat, average=None),
-        'recall': recall_score(y, yhat, average=None),
-        'coef': coefs.sort_values()
+        "model": lr,
+        "accuracy": accuracy_score(y, yhat),
+        "precision": precision_score(y, yhat, average=None),
+        "recall": recall_score(y, yhat, average=None),
+        "coef": coefs.sort_values(),
     }
+
 
 def dtree_classifier(X, y, **kwargs):
     tree = DecisionTreeClassifier(**kwargs).fit(X, y)
     yhat = tree.predict(X)
     features = pd.Series(dict(zip(X.columns, tree.feature_importances_)))
     return {
-        'model': tree,
-        'accuracy': accuracy_score(y, yhat),
-        'precision': precision_score(y, yhat, average=None),
-        'recall': recall_score(y, yhat, average=None),
-        'feature_importances': features.sort_values()
+        "model": tree,
+        "accuracy": accuracy_score(y, yhat),
+        "precision": precision_score(y, yhat, average=None),
+        "recall": recall_score(y, yhat, average=None),
+        "feature_importances": features.sort_values(),
     }
+
 
 def dtree_regressor(X, y, **kwargs):
     tree = DecisionTreeRegressor(**kwargs).fit(X, y)
@@ -65,13 +72,14 @@ def dtree_regressor(X, y, **kwargs):
     mse = mean_squared_error(y, yhat)
     features = pd.Series(dict(zip(X.columns, tree.feature_importances_)))
     return {
-        'model': tree,
-        'r2': r2_score(y, yhat),
-        'mse': mse,
-        'rmse': math.sqrt(mse),
-        'mae': mean_absolute_error(y, yhat),
-        'feature_importances': features.sort_values(),
+        "model": tree,
+        "r2": r2_score(y, yhat),
+        "mse": mse,
+        "rmse": math.sqrt(mse),
+        "mae": mean_absolute_error(y, yhat),
+        "feature_importances": features.sort_values(),
     }
+
 
 def linear_regression(X, y, **kwargs):
     lr = LinearRegression(**kwargs).fit(X, y)
@@ -79,12 +87,12 @@ def linear_regression(X, y, **kwargs):
     mse = mean_squared_error(y, yhat)
     coefs = pd.Series(dict(zip(X.columns, lr.coef_)))
     return {
-        'model': lr,
-        'r2': r2_score(y, yhat),
-        'mse': mse,
-        'rmse': math.sqrt(mse),
-        'mae': mean_absolute_error(y, yhat),
-        'coef': coefs.sort_values(),
+        "model": lr,
+        "r2": r2_score(y, yhat),
+        "mse": mse,
+        "rmse": math.sqrt(mse),
+        "mae": mean_absolute_error(y, yhat),
+        "coef": coefs.sort_values(),
     }
 
 
@@ -102,10 +110,13 @@ GridCandidates = List[
 
 
 def multi_grid_search(models: GridCandidates, X, y, cv=4) -> pd.DataFrame:
-    return pd.concat([
-        cv_results_to_df(GridSearchCV(model, params, cv=cv).fit(X, y))
-        for model, params in models
-    ])
+    return pd.concat(
+        [
+            cv_results_to_df(GridSearchCV(model, params, cv=cv).fit(X, y))
+            for model, params in models
+        ]
+    )
+
 
 def inspect_coefs(lm, X):
     coef = lm.coef_
@@ -113,6 +124,7 @@ def inspect_coefs(lm, X):
         return pd.DataFrame(coef, index=lm.classes_, columns=X.columns)
     else:
         return pd.Series(dict(zip(X.columns, lm.coef_.ravel()))).sort_values()
+
 
 def inspect_feature_importances(tree, X):
     return pd.Series(dict(zip(X.columns, tree.feature_importances_))).sort_values()
@@ -134,4 +146,3 @@ regression_models = [
     (SVR(), {"kernel": ["rbf", "linear"]}),
     (SVR(), {"kernel": ["poly"], "degree": [2]}),
 ]
-

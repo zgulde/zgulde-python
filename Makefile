@@ -6,7 +6,7 @@ clean: ## Remove built docs and packaging artifacts
 	rm -f index.html
 
 .PHONY: release
-release: clean test lint gh-pages ## Release a new version to pypi
+release: clean fmt test lint gh-pages ## Release a new version to pypi
 	python3 setup.py sdist bdist_wheel
 	python3 -m twine upload dist/*
 
@@ -56,6 +56,11 @@ lint-pytype:
 lint-mypy:
 	python -m mypy zgulde/__init__.py
 lint: lint-pytype lint-mypy ## Check types
+
+PY_FILES := $(shell find zgulde -name \*.py)
+.PHONY: fmt
+fmt: ## Format code with black
+	black -q $(PY_FILES)
 
 .PHONY: help
 help: ## Show this help message

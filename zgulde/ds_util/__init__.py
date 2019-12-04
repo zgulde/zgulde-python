@@ -11,34 +11,46 @@ from .modeling import *
 def better_confusion_matrix(actual, predicted, labels=None):
     cm = pd.crosstab(actual, predicted)
     if labels is not None:
-        cm.index = pd.Index(labels, name='Actual')
-        cm.columns = pd.Index(labels, name='Predictions')
+        cm.index = pd.Index(labels, name="Actual")
+        cm.columns = pd.Index(labels, name="Predictions")
     return cm
 
 
 def labelled_confusion_matrix():
-    matrix = [['TP',                         'FN (Type II Error)', 'Recall = TP / (TP + FN)'],
-              ['FP (Type I Error)',          'TN',                 ''],
-              ['Precision = TP / (TP + FP)', '',                   '']]
-    return pd.DataFrame(matrix,
-                        columns=['Predicted +', 'Predicted -', ''],
-                        index=['Actual +', 'Actual -', ''])
+    matrix = [
+        ["TP", "FN (Type II Error)", "Recall = TP / (TP + FN)"],
+        ["FP (Type I Error)", "TN", ""],
+        ["Precision = TP / (TP + FP)", "", ""],
+    ]
+    return pd.DataFrame(
+        matrix,
+        columns=["Predicted +", "Predicted -", ""],
+        index=["Actual +", "Actual -", ""],
+    )
+
 
 def rdatasets():
     datasets = data()
-    shapes = datasets.apply(lambda row: data(row.dataset_id).shape, axis=1)\
-                     .apply(pd.Series)\
-                     .rename({0: 'nrows', 1: 'ncols'}, axis=1)
+    shapes = (
+        datasets.apply(lambda row: data(row.dataset_id).shape, axis=1)
+        .apply(pd.Series)
+        .rename({0: "nrows", 1: "ncols"}, axis=1)
+    )
     return pd.concat([datasets, shapes], axis=1)
+
 
 # https://stackoverflow.com/questions/50559078/generating-random-dates-within-a-given-range-in-pandas
 def rand_dates(start, end, n):
-    start_u = pd.to_datetime(start).value // 10**9
-    end_u = pd.to_datetime(end).value // 10**9
-    return pd.DatetimeIndex((10**9*np.random.randint(start_u, end_u, n)).view('M8[ns]'))
+    start_u = pd.to_datetime(start).value // 10 ** 9
+    end_u = pd.to_datetime(end).value // 10 ** 9
+    return pd.DatetimeIndex(
+        (10 ** 9 * np.random.randint(start_u, end_u, n)).view("M8[ns]")
+    )
+
 
 import graphviz
 from sklearn.tree import export_graphviz, DecisionTreeClassifier
+
 
 def viz_dtree(X, y, **kwargs):
     tree = DecisionTreeClassifier(**kwargs).fit(X, y)
@@ -48,15 +60,14 @@ def viz_dtree(X, y, **kwargs):
         tree,
         out_file=None,
         feature_names=feature_names,
-        class_names=class_names, # target value names
+        class_names=class_names,  # target value names
         special_characters=True,
-        filled=True,             # fill nodes w/ informative colors
-        impurity=False,          # show impurity at each node
-        leaves_parallel=True,    # all leaves at the bottom
-        proportion=True,         # show percentages instead of numbers at each leaf
-        rotate=True,             # left to right instead of top-bottom
-        rounded=True,            # rounded boxes and sans-serif font
+        filled=True,  # fill nodes w/ informative colors
+        impurity=False,  # show impurity at each node
+        leaves_parallel=True,  # all leaves at the bottom
+        proportion=True,  # show percentages instead of numbers at each leaf
+        rotate=True,  # left to right instead of top-bottom
+        rounded=True,  # rounded boxes and sans-serif font
     )
-    graph = graphviz.Source(dot, filename='dtree', format='png')
+    graph = graphviz.Source(dot, filename="dtree", format="png")
     graph.view(cleanup=True)
-

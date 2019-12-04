@@ -1,4 +1,4 @@
-'''
+"""
 A module that provides all the common data science imports.
 
 For example:
@@ -9,7 +9,7 @@ and all the common data science imports will be in your namespace.
 
 Intended for quick iteration / experimentation, and explicit imports should be
 used in production code.
-'''
+"""
 
 import sys
 import os
@@ -51,22 +51,22 @@ from zgulde import partition, chunk, comp, pluck, extend_pandas
 from zgulde.ds_util import *
 
 # check if we're running interactively
-if hasattr(sys, 'ps1'):
+if hasattr(sys, "ps1"):
     # turn on interactive mode in matplotlib
     plt.ion()
 
 r = MyRange()
-tips = data('tips')
-mpg = data('mpg')
-mtcars = data('mtcars')
-swiss = data('swiss')
-iris = data('iris').cleanup_column_names()
+tips = data("tips")
+mpg = data("mpg")
+mtcars = data("mtcars")
+swiss = data("swiss")
+iris = data("iris").cleanup_column_names()
 
 # plotting style defaults
-plt.rc('patch', edgecolor='black', force_edgecolor=True, facecolor='firebrick')
-plt.rc('axes', grid=True)
-plt.rc('grid', linestyle=':', linewidth=.8, alpha=.7)
-plt.rc('axes.spines', right=False, top=False)
-plt.rc('figure', figsize=(11, 8))
-plt.rc('font', size=12.0)
-plt.rc('hist', bins=25)
+plt.rc("patch", edgecolor="black", force_edgecolor=True, facecolor="firebrick")
+plt.rc("axes", grid=True)
+plt.rc("grid", linestyle=":", linewidth=0.8, alpha=0.7)
+plt.rc("axes.spines", right=False, top=False)
+plt.rc("figure", figsize=(11, 8))
+plt.rc("font", size=12.0)
+plt.rc("hist", bins=25)

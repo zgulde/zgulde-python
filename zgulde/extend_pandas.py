@@ -1,4 +1,4 @@
-'''
+"""
 This module adds functionality to pandas Series and DataFrame objects. The
 objects in pandas will be modified by simply importing this module.
 
@@ -53,7 +53,7 @@ It also defines the left and right shift operators to be similar to
 >>> # This gives the same results as .pipe
 >>> ((df >> create_y) == df.pipe(create_y)).all(axis=None)
 True
-'''
+"""
 
 import numpy as np
 import pandas as pd
@@ -70,14 +70,16 @@ import re
 import sqlite3
 from tempfile import NamedTemporaryFile
 
-column_name_re = re.compile(r'[^a-zA-Z_0-9]')
+column_name_re = re.compile(r"[^a-zA-Z_0-9]")
+
 
 def clean_col_name(col: str) -> str:
-    col = col.strip().lower().replace(' ', '_').replace('.', '_').replace('-', '_')
-    return re.sub(column_name_re, '', col)
+    col = col.strip().lower().replace(" ", "_").replace(".", "_").replace("-", "_")
+    return re.sub(column_name_re, "", col)
+
 
 def cleanup_column_names(df: DataFrame, inplace=False) -> DataFrame:
-    '''
+    """
     Returns a data frame with the column names cleaned up. Special characters
     are removed and spaces, dots, and dashes are replaced with underscores.
 
@@ -108,11 +110,12 @@ def cleanup_column_names(df: DataFrame, inplace=False) -> DataFrame:
        feature_a  feature_b  feature_c
     0          1          2          3
     1          2          3          4
-    '''
-    return df.rename(mapper=clean_col_name, axis='columns', inplace=inplace)
+    """
+    return df.rename(mapper=clean_col_name, axis="columns", inplace=inplace)
+
 
 def get_scalers(df: DataFrame, columns, **kwargs) -> Callable:
-    '''
+    """
     Obtain a function that will scale multiple columns on a data frame.
 
     The returned function accepts a data frame and returns the data frame with
@@ -161,14 +164,15 @@ def get_scalers(df: DataFrame, columns, **kwargs) -> Callable:
     1 -0.489898  0.439658
     2 -0.244949  0.439658
     3  1.469694  0.615521
-    '''
-    if type(columns) is str: # allow either a single string or a list of strings
+    """
+    if type(columns) is str:  # allow either a single string or a list of strings
         columns = [columns]
     scalers = [df[col].get_scaler(**kwargs) for col in columns]
     return partial(reduce, lambda df, f: df.pipe(f), scalers)
 
+
 def cut(s: Series, *args, **kwargs):
-    '''
+    """
     Bin series values into discrete intervals.
 
     Shortcut to pd.cut
@@ -209,11 +213,12 @@ def cut(s: Series, *args, **kwargs):
     5    (3, 6]
     dtype: category
     Categories (2, interval[int64]): [(0, 3] < (3, 6]]
-    '''
+    """
     return pd.cut(s, *args, **kwargs)
 
-def get_scaler(s: Series, how='zscore'):
-    '''
+
+def get_scaler(s: Series, how="zscore"):
+    """
     Obtain a function that will scale the series on a data frame.
 
     The returned function accepts a data frame and returns the data frame with
@@ -261,28 +266,33 @@ def get_scaler(s: Series, how='zscore'):
     3 -0.405789  0.002004
     4 -0.403332  0.003006
     5  2.041229  0.004008
-    '''
+    """
     name = s.name
-    if how == 'zscore':
+    if how == "zscore":
         mu = s.mean()
         sigma = s.std()
+
         def scale(df: DataFrame) -> DataFrame:
             scaled_series = (df[name] - mu) / sigma
             kwargs = {name: scaled_series}
             return df.assign(**kwargs)
+
         return scale
-    elif how == 'minmax':
+    elif how == "minmax":
         min = s.min()
         max = s.max()
+
         def scale(df: DataFrame) -> DataFrame:
             scaled_series = (df[name] - min) / (max - min)
             kwargs = {name: scaled_series}
             return df.assign(**kwargs)
+
         return scale
-    raise ValueError('how must be one of {zscore, minmax}')
+    raise ValueError("how must be one of {zscore, minmax}")
+
 
 def zscore(s: Series) -> Series:
-    '''
+    """
     Returns the z-score for every value in the series.
 
     Z = (x - mu) / sigma
@@ -313,11 +323,12 @@ def zscore(s: Series) -> Series:
     7    1.095445
     8    1.460593
     dtype: float64
-    '''
+    """
     return (s - s.mean()) / s.std()
 
+
 def drop_outliers(df: DataFrame, cols: Union[str, List[str]], **kwargs) -> Series:
-    '''
+    """
     Drop rows with outliers in the given columns from the dataframe
 
     See the docs for .outliers for more details on parameters, and to customize
@@ -363,15 +374,15 @@ def drop_outliers(df: DataFrame, cols: Union[str, List[str]], **kwargs) -> Serie
     2  3  3
     3  4  4
     4  5  5
-    '''
+    """
     if type(cols) is str:
         cols = [cols]
-    to_keep = [~ df[col].outliers(**kwargs) for col in cols]
+    to_keep = [~df[col].outliers(**kwargs) for col in cols]
     return df[list(reduce(op.and_, to_keep))]
 
 
 def n_outliers(df: DataFrame, **kwargs) -> Series:
-    '''
+    """
     Provide a summary of the number of outliers in each numeric column.
 
     Parameters
@@ -411,14 +422,14 @@ def n_outliers(df: DataFrame, **kwargs) -> Series:
     x           0         0.0
     y           1         0.1
     z           2         0.2
-    '''
-    n_outliers = df.select_dtypes('number').apply(lambda s: s.outliers(**kwargs).sum())
+    """
+    n_outliers = df.select_dtypes("number").apply(lambda s: s.outliers(**kwargs).sum())
     p_outliers = n_outliers / df.shape[0]
     return pd.DataFrame(dict(n_outliers=n_outliers, p_outliers=p_outliers))
 
 
-def outliers(s: Series, how='iqr', k=1.5, std_cutoff=2) -> Series:
-    '''
+def outliers(s: Series, how="iqr", k=1.5, std_cutoff=2) -> Series:
+    """
     Detect outliers in the series.
 
     Returns
@@ -466,18 +477,19 @@ def outliers(s: Series, how='iqr', k=1.5, std_cutoff=2) -> Series:
     >>> df[df.x.outliers()]
          x  y
     6  100  0
-    '''
-    if how == 'iqr':
+    """
+    if how == "iqr":
         q1 = s.quantile(0.25)
         q3 = s.quantile(0.75)
         iqr = q3 - q1
         return (s < q1 - k * iqr) | (s > q3 + k * iqr)
-    elif how == 'std':
+    elif how == "std":
         return zscore(s).abs() > std_cutoff
-    raise ValueError('how must be one of {iqr,std}')
+    raise ValueError("how must be one of {iqr,std}")
+
 
 def nnull(df: DataFrame, axis=0) -> DataFrame:
-    '''
+    """
     Provide a summary of null values in each column.
 
     alias of nna
@@ -502,13 +514,14 @@ def nnull(df: DataFrame, axis=0) -> DataFrame:
     0          0        0.0
     1          1        0.5
     2          2        1.0
-    '''
+    """
     n_missing = df.isnull().sum(axis=axis)
     p_missing = n_missing / df.shape[axis]
     return pd.DataFrame(dict(n_missing=n_missing, p_missing=p_missing))
 
-def unnest(df: DataFrame, col: str, split=True, sep=',', reset_index=True) -> DataFrame:
-    '''
+
+def unnest(df: DataFrame, col: str, split=True, sep=",", reset_index=True) -> DataFrame:
+    """
     Turns a column with multiple values in each row in it into separate rows,
     each with a single value.
 
@@ -540,19 +553,21 @@ def unnest(df: DataFrame, col: str, split=True, sep=',', reset_index=True) -> Da
     3  b  d
     4  b  e
     5  c  f
-    '''
+    """
     s = df[col].str.split(sep) if split else df[col]
-    s = s.apply(pd.Series)\
-        .stack()\
-        .reset_index(level=1, drop=True)
+    s = s.apply(pd.Series).stack().reset_index(level=1, drop=True)
 
     s.name = col
 
-    return df.drop(columns=[col]).join(s)\
+    return (
+        df.drop(columns=[col])
+        .join(s)
         .pipe(lambda df: df.reset_index(drop=True) if reset_index else df)
+    )
+
 
 def correlation_heatmap(df: DataFrame, fancy=False, **kwargs):
-    '''
+    """
     Plot a heatmap of the correlation matrix for the data frame.
 
     Any additional kwargs are passed to ``seaborn.heatmap`` and the resulting
@@ -563,9 +578,9 @@ def correlation_heatmap(df: DataFrame, fancy=False, **kwargs):
     >>> df = pd.DataFrame(dict(x=x, y=y))
     >>> df.correlation_heatmap()
     <matplotlib.axes._subplots.AxesSubplot object at ...>
-    '''
-    if 'cmap' not in kwargs:
-        kwargs['cmap'] = cm.coolwarm_r
+    """
+    if "cmap" not in kwargs:
+        kwargs["cmap"] = cm.coolwarm_r
         # kwargs['cmap'] = cm.PiYG
 
     if not fancy:
@@ -579,13 +594,22 @@ def correlation_heatmap(df: DataFrame, fancy=False, **kwargs):
 
     # Draw the heatmap with the mask and correct aspect ratio
     plt.figure(figsize=(12, 12))
-    sns.heatmap(cmat, mask=mask, cbar=True, annot=True, square=True, fmt='.2f',
-                annot_kws={'size': 10}, **kwargs)
+    sns.heatmap(
+        cmat,
+        mask=mask,
+        cbar=True,
+        annot=True,
+        square=True,
+        fmt=".2f",
+        annot_kws={"size": 10},
+        **kwargs
+    )
     plt.yticks(rotation=0)
     return plt
 
+
 def hdtl(df: DataFrame, n=3) -> DataFrame:
-    '''
+    """
     Return the head and the tail of the data frame.
 
     Parameters
@@ -621,11 +645,12 @@ def hdtl(df: DataFrame, n=3) -> DataFrame:
     7  7  7
     8  8  8
     9  9  9
-    '''
+    """
     return pd.concat([df.head(n), df.tail(n)])
 
+
 def log(s: Series):
-    '''
+    """
     Returns the log base 10 of the values in the series using np.log10
 
     Example
@@ -644,11 +669,12 @@ def log(s: Series):
     2    2.0
     3    3.0
     dtype: float64
-    '''
+    """
     return np.log10(s)
 
+
 def ln(s: Series):
-    '''
+    """
     Returns the natural log of the values in the series using np.log
 
     Example
@@ -667,11 +693,12 @@ def ln(s: Series):
     2    2.0
     3    3.0
     dtype: float64
-    '''
+    """
     return np.log(s)
 
+
 def log2(s: Series):
-    '''
+    """
     Returns the log base 2 of the values in the series using np.log2
 
     Example
@@ -692,11 +719,12 @@ def log2(s: Series):
     3    3.0
     4    4.0
     dtype: float64
-    '''
+    """
     return np.log2(s)
 
+
 def crosstab(df: DataFrame, rows, cols, values=None, **kwargs) -> DataFrame:
-    '''
+    """
     Shortcut to call to pd.crosstab.
 
     Parameters
@@ -742,13 +770,14 @@ def crosstab(df: DataFrame, rows, cols, values=None, **kwargs) -> DataFrame:
     x
     a  1  1
     b  4  4
-    '''
+    """
     if values is not None:
-        kwargs['values'] = df[values]
+        kwargs["values"] = df[values]
     return pd.crosstab(df[rows], df[cols], **kwargs)
 
+
 def ttest(df: DataFrame, target: str) -> DataFrame:
-    '''
+    """
     Runs a 1 sample t-test comparing the specified target variable to the
     overall mean among all of the possible subgroups.
 
@@ -772,20 +801,24 @@ def ttest(df: DataFrame, target: str) -> DataFrame:
              Fri     -1.383042  0.183569   19
     time     Dinner   1.467432  0.144054  176
              Lunch   -2.797882  0.006710   68
-    '''
+    """
     results = []
     for col in df.drop(columns=target):
         unique_vals = df[col].unique()
-        ttests = DataFrame([ttest_1samp(df[df[col] == v][target],
-                                        df[target].mean())
-                            for v in unique_vals])
+        ttests = DataFrame(
+            [
+                ttest_1samp(df[df[col] == v][target], df[target].mean())
+                for v in unique_vals
+            ]
+        )
         ns = [df[df[col] == v].shape[0] for v in unique_vals]
         ttests = ttests.assign(n=ns, value=unique_vals, variable=col)
         results.append(ttests)
-    return pd.concat(results, axis=0).set_index(['variable', 'value'])
+    return pd.concat(results, axis=0).set_index(["variable", "value"])
+
 
 def ttest_2samp(df: DataFrame, target: str) -> DataFrame:
-    '''
+    """
     Runs a 2 sample t-test comparing the specified target variable for every
     unique value from every other column in the data frame.
 
@@ -814,20 +847,24 @@ def ttest_2samp(df: DataFrame, target: str) -> DataFrame:
              Fri     -1.345462  0.179735   19
     time     Dinner   2.897638  0.004105  176
              Lunch   -2.897638  0.004105   68
-    '''
+    """
     results = []
     for col in df.drop(columns=target):
         unique_vals = df[col].unique()
-        ttests = DataFrame([ttest_ind(df[df[col] == v][target],
-                                      df[df[col] != v][target])
-                            for v in unique_vals])
+        ttests = DataFrame(
+            [
+                ttest_ind(df[df[col] == v][target], df[df[col] != v][target])
+                for v in unique_vals
+            ]
+        )
         ns = [df[df[col] == v].shape[0] for v in unique_vals]
         ttests = ttests.assign(n=ns, value=unique_vals, variable=col)
         results.append(ttests)
-    return pd.concat(results, axis=0).set_index(['variable', 'value'])
+    return pd.concat(results, axis=0).set_index(["variable", "value"])
+
 
 def chi2(df: DataFrame) -> Tuple[DataFrame, DataFrame]:
-    '''
+    """
     Performs a chi squared contingency table test between all the combinations
     of two columns in the data frame.
 
@@ -857,7 +894,7 @@ def chi2(df: DataFrame) -> Tuple[DataFrame, DataFrame]:
     smoker       NaN  0.505373  25.7872
     time    0.505373       NaN  217.113
     day      25.7872   217.113      NaN
-    '''
+    """
     p_vals = pd.DataFrame(index=df.columns, columns=df.columns)
     chi2s = p_vals.copy()
     for x1, x2 in it.combinations(df.columns, 2):
@@ -868,8 +905,9 @@ def chi2(df: DataFrame) -> Tuple[DataFrame, DataFrame]:
         chi2s.loc[x2, x1] = stat
     return p_vals, chi2s
 
+
 def rformula(df, formula):
-    '''
+    """
     Split a data frame into X and y based on an R Formula.
 
     Implements a limited subset of the r formula langauge. Formulas like the
@@ -923,20 +961,24 @@ def rformula(df, formula):
     1    5
     2    6
     Name: b, dtype: int64
-    '''
-    target, indep_vars = re.sub(r'\s', '', formula).split('~')
+    """
+    target, indep_vars = re.sub(r"\s", "", formula).split("~")
     y = df[target]
-    if indep_vars == '.':
+    if indep_vars == ".":
         X = df.drop(columns=target)
     else:
-        X = df[indep_vars.split('+')]
+        X = df[indep_vars.split("+")]
     return X, y
+
 
 def pipe(df: DataFrame, fn: Callable):
     return df.pipe(fn)
 
-def sql(df: DataFrame, query: str, table='df', in_memory=True, index=False) -> pd.DataFrame:
-    '''
+
+def sql(
+    df: DataFrame, query: str, table="df", in_memory=True, index=False
+) -> pd.DataFrame:
+    """
     Run a SQL query against the dataframe.
 
     The dataframe is converted to a sqlite database and the provided query is
@@ -976,9 +1018,9 @@ def sql(df: DataFrame, query: str, table='df', in_memory=True, index=False) -> p
        c  AVG(a + b)
     0  a         6.0
     1  b         9.0
-    '''
+    """
     if in_memory:
-        conn = sqlite3.connect(':memory:')
+        conn = sqlite3.connect(":memory:")
         df.to_sql(table, conn, index=index)
         return pd.read_sql(query, conn)
     else:
@@ -987,8 +1029,9 @@ def sql(df: DataFrame, query: str, table='df', in_memory=True, index=False) -> p
             df.to_sql(table, conn, index=index)
             return pd.read_sql(query, conn)
 
-def top_n(s: pd.Series, n=3, other_val='Other') -> pd.Series:
-    '''
+
+def top_n(s: pd.Series, n=3, other_val="Other") -> pd.Series:
+    """
     Convert the series to the most frequent n values and use other_val for the
     rest.
 
@@ -1016,12 +1059,13 @@ def top_n(s: pd.Series, n=3, other_val='Other') -> pd.Series:
     4    Other
     5    Other
     dtype: object
-    '''
+    """
     top_n = s.value_counts().index[:n]
     return pd.Series(np.where(s.isin(top_n), s, other_val))
 
+
 def select(df, *args: str, **kwargs: str) -> pd.DataFrame:
-    '''
+    """
     Return specified columns from a dataframe, optionally renaming some.
 
     Parameters
@@ -1064,8 +1108,9 @@ def select(df, *args: str, **kwargs: str) -> pd.DataFrame:
     0  1    4
     1  2    5
     2  3    6
-    '''
+    """
     return df[[*args, *kwargs.keys()]].rename(columns=kwargs)
+
 
 pd.Series.bin = cut
 pd.Series.cut = cut
@@ -1097,16 +1142,7 @@ pd.DataFrame.xtab = crosstab
 pd.DataFrame.select = select
 pd.DataFrame.sql = sql
 
-series_extensions = [
-    cut,
-    get_scaler,
-    ln,
-    log,
-    log2,
-    outliers,
-    top_n,
-    zscore,
-]
+series_extensions = [cut, get_scaler, ln, log, log2, outliers, top_n, zscore]
 
 data_frame_extensions = [
     chi2,

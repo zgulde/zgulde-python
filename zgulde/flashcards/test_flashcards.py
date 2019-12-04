@@ -2,8 +2,10 @@ import textwrap as tw
 import pytest
 from zgulde.flashcards.__main__ import make_cards, FlashCard
 
+
 def test_card_parsing():
-    content = tw.dedent('''
+    content = tw.dedent(
+        """
     here is the front
     ---
     and this is the back
@@ -11,7 +13,8 @@ def test_card_parsing():
     this is another card
     ---
     this is the second back
-    ''').strip()
+    """
+    ).strip()
 
     cards = make_cards(content)
 
@@ -19,14 +22,16 @@ def test_card_parsing():
 
     first, second = cards
 
-    assert first.front == 'here is the front'
-    assert first.back == 'and this is the back'
+    assert first.front == "here is the front"
+    assert first.back == "and this is the back"
 
-    assert second.front == 'this is another card'
-    assert second.back == 'this is the second back'
+    assert second.front == "this is another card"
+    assert second.back == "this is the second back"
+
 
 def test_whitespace_doesnt_matter_in_card_parsing():
-    content = tw.dedent('''
+    content = tw.dedent(
+        """
 
     here is the front
 
@@ -42,7 +47,8 @@ def test_whitespace_doesnt_matter_in_card_parsing():
     ---
 
     this is the second back
-    ''').strip()
+    """
+    ).strip()
 
     cards = make_cards(content)
 
@@ -50,8 +56,8 @@ def test_whitespace_doesnt_matter_in_card_parsing():
 
     first, second = cards
 
-    assert first.front == 'here is the front'
-    assert first.back == 'and this is the back'
+    assert first.front == "here is the front"
+    assert first.back == "and this is the back"
 
-    assert second.front == 'this is another card'
-    assert second.back == 'this is the second back'
+    assert second.front == "this is another card"
+    assert second.back == "this is the second back"
