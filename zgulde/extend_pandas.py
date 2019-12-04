@@ -55,20 +55,21 @@ It also defines the left and right shift operators to be similar to
 True
 """
 
-import numpy as np
-import pandas as pd
-from pandas import Series, DataFrame
-import seaborn as sns
-from matplotlib.pyplot import cm
-from matplotlib import pyplot as plt
-from typing import List, Callable, Tuple, Union
-import operator as op
-from functools import reduce, partial
 import itertools as it
-from scipy.stats import ttest_ind, chi2_contingency, ttest_1samp
+import operator as op
 import re
 import sqlite3
+from functools import partial, reduce
 from tempfile import NamedTemporaryFile
+from typing import Callable, List, Tuple, Union
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from matplotlib import pyplot as plt
+from matplotlib.pyplot import cm
+from pandas import DataFrame, Series
+from scipy.stats import chi2_contingency, ttest_1samp, ttest_ind
 
 column_name_re = re.compile(r"[^a-zA-Z_0-9]")
 

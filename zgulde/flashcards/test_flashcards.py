@@ -1,6 +1,8 @@
 import textwrap as tw
+
 import pytest
-from zgulde.flashcards.__main__ import make_cards, FlashCard
+
+from zgulde.flashcards.__main__ import FlashCard, make_cards
 
 
 def test_card_parsing():

@@ -2,15 +2,9 @@
 python -m zgulde.em --help
 """
 import fileinput
-
-from typing import List
-from pprint import pprint
-
-import os
+import itertools as it
 import sys
 import textwrap
-
-import itertools as it
 
 FILE_EXTENSIONS = dict(
     sh=dict(comment="#", language="bash"),

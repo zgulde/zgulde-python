@@ -7,47 +7,44 @@ For example:
 
 and all the common data science imports will be in your namespace.
 
-Intended for quick iteration / experimentation, and explicit imports should be
-used in production code.
+Intended for quick iteration / experimentation; explicit imports should be used
+in production code.
 """
 
-import sys
-import os
 import itertools as it
-from functools import reduce, partial
-import math
-from math import sqrt, factorial
-
-import pandas as pd
-from pandas import DataFrame, Series
-import numpy as np
+import sys
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import cm
+import numpy as np
+import pandas as pd
 import seaborn as sns
-
-from scipy import stats
-from scipy.stats import binom, norm, geom, poisson
-
 import sklearn
-from sklearn.model_selection import GridSearchCV, train_test_split, cross_val_score
-from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
-from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
-from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
-from sklearn.svm import SVC, SVR
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.cluster import DBSCAN, KMeans, dbscan, k_means
-from sklearn.preprocessing import scale, StandardScaler
-from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
-from sklearn.metrics import accuracy_score, precision_score, recall_score
-
-from sklearn.pipeline import Pipeline
-
+from matplotlib import cm
+from mpl_toolkits.mplot3d import Axes3D
+from pandas import DataFrame, Series
 from pydataset import data
+from scipy import stats
+from scipy.stats import binom, geom, norm, poisson
+from sklearn.cluster import DBSCAN, KMeans, dbscan, k_means
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
+from sklearn.metrics import (
+    accuracy_score,
+    mean_absolute_error,
+    mean_squared_error,
+    precision_score,
+    r2_score,
+    recall_score,
+)
+from sklearn.model_selection import GridSearchCV, cross_val_score, train_test_split
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, scale
+from sklearn.svm import SVC, SVR
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
-from zgulde import partition, chunk, comp, pluck, extend_pandas
+from zgulde import chunk, comp, extend_pandas, partition, pluck
 from zgulde.ds_util import *
 
 # check if we're running interactively

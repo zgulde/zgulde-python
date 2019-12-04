@@ -59,8 +59,11 @@ lint: lint-pytype lint-mypy ## Check types
 
 PY_FILES := $(shell find zgulde -name \*.py)
 .PHONY: fmt
-fmt: ## Format code with black
-	black -q $(PY_FILES)
+fmt: ## Format code with isort, autoflake, and black
+	@# python -m autoflake --in-place --remove-unused-variables --remove-all-unused-imports $(PY_FILES)
+	@# python -m autoflake --in-place --remove-unused-variables $(PY_FILES)
+	python -m isort $(PY_FILES)
+	python -m black -q $(PY_FILES)
 
 .PHONY: help
 help: ## Show this help message

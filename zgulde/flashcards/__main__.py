@@ -1,7 +1,8 @@
-from sys import exit
-from os import path, system
 from argparse import ArgumentParser
+from os import path, system
+from sys import exit
 from typing import List, NamedTuple
+
 from IPython import embed
 
 FlashCard = NamedTuple("FlashCard", front=str, back=str)

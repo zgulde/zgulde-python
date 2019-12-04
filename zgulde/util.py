@@ -1,21 +1,21 @@
 """
 A module full of general utility functions.
 """
-from typing import (
-    Callable,
-    List,
-    Iterable,
-    Dict,
-    Any,
-    TypeVar,
-    Tuple,
-    Optional,
-    Sequence,
-)
-import itertools as it
-from functools import reduce, partial
 import collections
 import hashlib
+import itertools as it
+from functools import reduce
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    TypeVar,
+)
 
 
 def md5(s):

@@ -24,11 +24,13 @@ For example:
 
 Note that currently, no special highlighting is done for nested groups.
 """
-from IPython.display import display, HTML as nb_HTML
-from prompt_toolkit import print_formatted_text, HTML as cli_HTML
 import re
-from typing import Iterator, Tuple, List
+from typing import Iterator, List, Tuple
 
+from IPython.display import HTML as nb_HTML
+from IPython.display import display
+from prompt_toolkit import HTML as cli_HTML
+from prompt_toolkit import print_formatted_text
 
 MatchIndexes = List[int]
 
