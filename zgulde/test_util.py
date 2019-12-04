@@ -1,5 +1,5 @@
 import pytest
-from zgulde import *
+from zgulde.util import *
 
 def test_plucking():
     d = {'x': 1, 'y': 2}
@@ -144,3 +144,12 @@ def test_append():
     assert list(append([1, 2, 3], 4)) == [1, 2, 3, 4], 'appends the given element to the list'
     assert list(append(it.repeat(0, 2), 1)) == [0, 0, 1], 'works with iterables'
 
+@pytest.fixture()
+def r():
+    return MyRange()
+
+def test_it_generates_a_range(r):
+    assert r[5:8] == [5, 6, 7, 8]
+    assert r[5:8:2] == [5, 7]
+    assert r[:5] == [0, 1, 2, 3, 4, 5]
+    assert r[5:] == []

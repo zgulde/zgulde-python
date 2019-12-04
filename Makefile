@@ -41,15 +41,13 @@ test-extend-pandas: ## Run the doctests for the zgulde/extend_pandas module
 	python -m doctest -o NORMALIZE_WHITESPACE -o ELLIPSIS zgulde/extend_pandas.py
 test-util: ## Run the tests for zgulde/__init__
 	python -m doctest -o NORMALIZE_WHITESPACE -o ELLIPSIS zgulde/__init__.py
-	pytest -q zgulde/test_utility_functions.py
+	pytest -q zgulde/test_util.py
 test-flashcards:
 	pytest -q zgulde/flashcards/test_flashcards.py
 	pytype zgulde/flashcards/__main__.py
-test-my-range:
-	pytest -q --disable-warnings zgulde/test_my_range.py
 test-hl-matches:
 	python -m doctest -o NORMALIZE_WHITESPACE -o ELLIPSIS zgulde/hl_matches.py
-test: test-em test-extend-pandas test-util test-my-range test-flashcards test-hl-matches ## Run all the tests
+test: test-em test-extend-pandas test-util test-flashcards test-hl-matches ## Run all the tests
 
 .PHONY: lint-pytype lint-mypy lint
 lint-pytype:

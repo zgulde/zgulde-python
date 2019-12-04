@@ -13,6 +13,9 @@ from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.svm import SVC, SVR
 from sklearn.model_selection import GridSearchCV
 
+def model(X, y, m, **kwargs):
+    return m(**kwargs).fit(X, y)
+
 def residuals(model, X, y):
     return y - model.predict(X)
 

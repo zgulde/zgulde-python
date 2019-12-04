@@ -1,5 +1,6 @@
-#!/usr/bin/env python3
-
+'''
+python -m zgulde.em --help
+'''
 import fileinput
 
 from typing import List
