@@ -10,6 +10,7 @@ from typing import (
     Callable,
     Dict,
     Iterable,
+    Iterator,
     List,
     Optional,
     Sequence,
@@ -154,7 +155,7 @@ def append(xs, v):
 A = TypeVar("A")
 
 
-def and_prev(xs: Iterable[A]) -> Iterable[Tuple[Optional[A], A]]:
+def and_prev(xs: Iterable[A]) -> Iterator[Tuple[Optional[A], A]]:
     """
     Return each item of the iterable xs, along with the previous item.
 
@@ -172,7 +173,7 @@ def and_prev(xs: Iterable[A]) -> Iterable[Tuple[Optional[A], A]]:
     return zip(prepend(xs, None), xs)
 
 
-def and_next(xs: Iterable[A]) -> Iterable[Tuple[A, Optional[A]]]:
+def and_next(xs: Iterable[A]) -> Iterator[Tuple[A, Optional[A]]]:
     """
     Return each of the items in the iterable xs, along with the next item.
 
@@ -190,7 +191,7 @@ def and_next(xs: Iterable[A]) -> Iterable[Tuple[A, Optional[A]]]:
     return it.zip_longest(xs, drop(xs, 1))
 
 
-def prev_and_next(xs: Iterable[A]) -> Iterable[Tuple[Optional[A], A, Optional[A]]]:
+def prev_and_next(xs: Iterable[A]) -> Iterator[Tuple[Optional[A], A, Optional[A]]]:
     """
     Return each of the items in the iterable xs, along with the previous and
     next elements.

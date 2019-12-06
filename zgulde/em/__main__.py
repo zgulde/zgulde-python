@@ -68,7 +68,7 @@ def main(fp, language, doc_marker):
                 print(line[chars_to_skip:].lstrip())
             print()
         else:
-            raise Error(f"Unknown section type: {section_type}")
+            raise ValueError(f"Unknown section type: {section_type}")
 
 
 def get_defaults(args):
