@@ -5,13 +5,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from mpl_toolkits.mplot3d import Axes3D
+from pydataset import data
 
 # TODO: refactor some of these to iterate over .groupby instead of unique values
 
 
 def plot_dual_axis(df: pd.DataFrame, x: str) -> Callable:
     """
-    plot_dual_axis(df, 'x')('y1')('y2')
+    >>> mpg = data("mpg")
+    >>> plot_dual_axis(mpg, "displ")("hwy")("cty")
+    <Figure size ... with 2 Axes>
     """
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
@@ -37,22 +40,6 @@ def plot_3d(df, x, y, z, g):
     ax.legend(title=g)
 
 
-def plot_dual_axis(df: pd.DataFrame, x: str):
-    "plot_dual_axis(df, 'x')('y1', marker='x')('y2', color='firebrick')"
-    fig, ax1 = plt.subplots()
-    ax2 = ax1.twinx()
-
-    def plot_y2(y, *args, **kwargs):
-        ax2.plot(df[x], df[y], *args, **kwargs)
-        return fig
-
-    def plot_y1(y, *args, **kwargs):
-        ax1.plot(df[x], df[y], *args, **kwargs)
-        return plot_y2
-
-    return plot_y1
-
-
 def top_n(s: pd.Series, n=3, other_val="Other"):
     top_n = s.value_counts().index[:n]
     return pd.Series(np.where(s.isin(top_n), s, other_val), name=s.name)
@@ -61,7 +48,12 @@ def top_n(s: pd.Series, n=3, other_val="Other"):
 def plot_hist_by_group(x: pd.Series, g: pd.Series, *args, **kwargs):
     """
     >>> mpg = data('mpg')
-    >>> hist_by_group(mpg.hwy, mpg.cyl)
+    >>> plot_hist_by_group(mpg.hwy, mpg.cyl)
+    (<Figure size ... with 4 Axes>, array([[<matplotlib.axes._subplots.AxesSubplot object at ...>,
+            <matplotlib.axes._subplots.AxesSubplot object at ...>],
+           [<matplotlib.axes._subplots.AxesSubplot object at ...>,
+            <matplotlib.axes._subplots.AxesSubplot object at ...>]],
+          dtype=object))
     """
     fig, axs = plt.subplots(2, 2) if g.nunique() > 2 else plt.subplots(1, 2)
     fig.suptitle(f"Distribution of {x.name} by {g.name}")
@@ -91,6 +83,7 @@ def plot_bar_by_group(x: pd.Series, g: pd.Series, aggfunc="mean", *args, **kwarg
     """
     >>> mpg = data('mpg')
     >>> plot_bar_by_group(mpg.hwy, mpg['class'])
+    (<Figure size ... with 1 Axes>, <matplotlib.axes._subplots.AxesSubplot object at ...>)
     """
     g = top_n(g, 3)
     fig, ax = plt.subplots()

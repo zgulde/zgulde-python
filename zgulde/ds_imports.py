@@ -12,12 +12,15 @@ in production code.
 """
 
 import itertools as it
+import re
 import sys
+from functools import partial, reduce
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import requests as r
 import seaborn as sns
 import sklearn
 from matplotlib import cm
@@ -44,15 +47,15 @@ from sklearn.preprocessing import StandardScaler, scale
 from sklearn.svm import SVC, SVR
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
-from zgulde import chunk, comp, extend_pandas, partition, pluck
+import zgulde.extend_pandas
 from zgulde.ds_util import *
+from zgulde.util import *
 
 # check if we're running interactively
 if hasattr(sys, "ps1"):
     # turn on interactive mode in matplotlib
     plt.ion()
 
-r = MyRange()
 tips = data("tips")
 mpg = data("mpg")
 mtcars = data("mtcars")

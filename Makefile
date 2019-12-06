@@ -1,12 +1,13 @@
-default: test-hl-matches
+default: doctest
 
 .PHONY: clean
 clean: ## Remove built docs and packaging artifacts
 	rm -rf dist build zgulde.egg-info public
 	rm -f index.html
+	rm -rf .make
 
 .PHONY: release
-release: clean fmt test lint gh-pages ## Release a new version to pypi
+release: clean fmt test gh-pages ## Release a new version to pypi
 	python3 setup.py sdist bdist_wheel
 	python3 -m twine upload dist/*
 
@@ -34,30 +35,27 @@ gh-pages: clean ## Build, commit, and push docs for the gh-pages branch
 	git checkout --force master
 	git push origin gh-pages --force
 
-.PHONY: test test-em test-extend-pandas test-util
-test-em: ## Run the tests for the `em` module
-	pytest -q zgulde/em/test_extract_markdown.py
-test-extend-pandas: ## Run the doctests for the zgulde/extend_pandas module
-	python -m doctest -o NORMALIZE_WHITESPACE -o ELLIPSIS zgulde/extend_pandas.py
-test-util: ## Run the tests for zgulde/__init__
-	python -m doctest -o NORMALIZE_WHITESPACE -o ELLIPSIS zgulde/__init__.py
-	pytest -q zgulde/test_util.py
-test-flashcards:
-	pytest -q zgulde/flashcards/test_flashcards.py
-	pytype zgulde/flashcards/__main__.py
-test-hl-matches:
-	python -m doctest -o NORMALIZE_WHITESPACE -o ELLIPSIS zgulde/hl_matches.py
-test: test-em test-extend-pandas test-util test-flashcards test-hl-matches ## Run all the tests
-
-.PHONY: lint-pytype lint-mypy lint
-lint-pytype:
-	pytype zgulde/extend_pandas.py
-	pytype zgulde/__init__.py
-lint-mypy:
-	python -m mypy zgulde/__init__.py
-lint: lint-pytype lint-mypy ## Check types
-
 PY_FILES := $(shell find zgulde -name \*.py)
+
+.PHONY: test doctest pytest
+DOCTESTS := $(addprefix .make/doctest/, $(filter-out %__main__.py, $(PY_FILES)))
+.make/doctest/%: %
+	@mkdir -p $(dir $@)
+	python -m doctest -o NORMALIZE_WHITESPACE -o ELLIPSIS $<
+	@touch $@
+test: doctest pytest
+doctest: $(DOCTESTS)
+pytest:
+	python -m pytest
+
+.PHONY: check-types
+TYPE_CHECKS := $(addprefix .make/pytype/, $(PY_FILES))
+.make/pytype/%: %
+	@mkdir -p $(dir $@)
+	pytype $<
+	@touch $@
+check-types: $(TYPE_CHECKS)
+
 .PHONY: fmt
 fmt: ## Format code with isort, autoflake, and black
 	@# python -m autoflake --in-place --remove-unused-variables --remove-all-unused-imports $(PY_FILES)

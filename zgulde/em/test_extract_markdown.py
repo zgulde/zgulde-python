@@ -3,7 +3,7 @@ from subprocess import check_output
 
 import pytest
 
-from .__main__ import make_categorizor, prev_and_next
+from zgulde.em.__main__ import make_categorizor, prev_and_next
 
 
 @pytest.fixture

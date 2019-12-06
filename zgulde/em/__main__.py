@@ -1,5 +1,9 @@
 """
 python -m zgulde.em --help
+
+TODO:
+
+- preserve indentation after doc marker comments (e.g. multiline list items)
 """
 import fileinput
 import itertools as it

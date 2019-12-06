@@ -1,8 +1,10 @@
+import graphviz
 import pandas as pd
 from pydataset import data
+from sklearn.tree import DecisionTreeClassifier, export_graphviz
 
-from .plotting import *
-from .modeling import *
+from zgulde.ds_util.modeling import *
+from zgulde.ds_util.plotting import *
 
 # mode aggregation
 # tips.groupby('size').agg(stats.mode).apply(lambda s: s.apply(lambda v: v[0][0]))
@@ -46,10 +48,6 @@ def rand_dates(start, end, n):
     return pd.DatetimeIndex(
         (10 ** 9 * np.random.randint(start_u, end_u, n)).view("M8[ns]")
     )
-
-
-import graphviz
-from sklearn.tree import export_graphviz, DecisionTreeClassifier
 
 
 def viz_dtree(X, y, **kwargs):

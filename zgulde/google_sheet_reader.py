@@ -15,6 +15,7 @@ class GoogleSheetReader:
 
     Based on https://developers.google.com/sheets/api/quickstart/python
 
+    0. pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
     1. Enable the google sheets api and obtain a json file with your credentials
     2. Run the app and sign in to your google account to allow access to your
        google sheets
