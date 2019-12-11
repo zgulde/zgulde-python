@@ -1,5 +1,6 @@
-from typing import Iterable, Union, Tuple
+from typing import Iterable, Tuple, Union
 
+import nltk
 import pandas as pd
 import sklearn
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer

@@ -1,10 +1,13 @@
 default: doctest
 
+.PHONY: pre-commit
+pre-commit: fmt test check-types
+
 .PHONY: clean
 clean: ## Remove built docs and packaging artifacts
 	rm -rf dist build zgulde.egg-info public
 	rm -f index.html
-	rm -rf .make
+	rm -rf .make .mypy_cache .pytest_cache .pytype
 
 .PHONY: release
 release: clean fmt test gh-pages ## Release a new version to pypi
@@ -48,19 +51,24 @@ doctest: $(DOCTESTS)
 pytest:
 	python -m pytest
 
-.PHONY: check-types
-TYPE_CHECKS := $(addprefix .make/pytype/, $(PY_FILES))
+.PHONY: check-types check-types-mypy check-types-pytype
+PYTYPE_TYPE_CHECKS := $(addprefix .make/pytype/, $(PY_FILES))
+MYPY_TYPE_CHECKS := $(addprefix .make/mypy/, $(PY_FILES))
 .make/pytype/%: %
 	@mkdir -p $(dir $@)
 	pytype $<
 	@touch $@
-check-types: $(TYPE_CHECKS)
+.make/mypy/%: %
+	@mkdir -p $(dir $@)
+	python -m mypy --ignore-missing-imports $<
+	@touch $@
+check-types-mypy: $(MYPY_TYPE_CHECKS)
+check-types-pytype: $(PYTYPE_TYPE_CHECKS)
+check-types: check-types-mypy check-types-pytype
 
 .PHONY: fmt
-fmt: ## Format code with isort, autoflake, and black
-	@# python -m autoflake --in-place --remove-unused-variables --remove-all-unused-imports $(PY_FILES)
-	@# python -m autoflake --in-place --remove-unused-variables $(PY_FILES)
-	python -m isort $(PY_FILES)
+fmt: ## Format code with isort and black
+	python -m isort --line-width 88 --trailing-comma --multi-line 3 $(PY_FILES)
 	python -m black -q $(PY_FILES)
 
 .PHONY: help

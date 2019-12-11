@@ -61,7 +61,7 @@ import re
 import sqlite3
 from functools import partial, reduce
 from tempfile import NamedTemporaryFile
-from typing import Callable, List, Tuple, Union
+from typing import Callable, List, Tuple, Union, cast
 
 import numpy as np
 import pandas as pd
@@ -377,7 +377,7 @@ def drop_outliers(df: DataFrame, cols: Union[str, List[str]], **kwargs) -> Serie
     4  5  5
     """
     if type(cols) is str:
-        cols = [cols]
+        cols = [cast(str, cols)]
     to_keep = [~df[col].outliers(**kwargs) for col in cols]
     return df[list(reduce(op.and_, to_keep))]
 

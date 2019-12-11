@@ -25,7 +25,7 @@ For example:
 Note that currently, no special highlighting is done for nested groups.
 """
 import re
-from typing import Iterator, List, Tuple, Match
+from typing import Iterator, List, Match, Tuple
 
 from IPython.display import HTML as nb_HTML
 from IPython.display import display
@@ -35,9 +35,7 @@ from prompt_toolkit import print_formatted_text
 MatchIndexes = List[int]
 
 
-def _starts_ends_overall(
-    m: Match
-) -> Tuple[MatchIndexes, MatchIndexes, MatchIndexes]:
+def _starts_ends_overall(m: Match) -> Tuple[MatchIndexes, MatchIndexes, MatchIndexes]:
     """
     Extracts indices from a match object.
 
@@ -75,10 +73,10 @@ def _starts_ends_overalls(
     >>> _starts_ends_overalls(matches)
     ([1, 3, 5], [2, 4, 6], [0, 2, 4], [2, 4, 6])
     """
-    groupstarts = []
-    groupends = []
-    overallstarts = []
-    overallends = []
+    groupstarts: List[int] = []
+    groupends: List[int] = []
+    overallstarts: List[int] = []
+    overallends: List[int] = []
     for starts, ends, (start, end) in map(_starts_ends_overall, matches):
         groupstarts += starts
         groupends += ends

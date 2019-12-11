@@ -5,7 +5,12 @@ from typing import List, NamedTuple
 
 from IPython import embed
 
-FlashCard = NamedTuple("FlashCard", front=str, back=str)
+
+class FlashCard(NamedTuple):
+    front: str
+    back: str
+
+
 Deck = List[FlashCard]
 
 
