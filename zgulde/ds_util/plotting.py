@@ -30,6 +30,31 @@ def plot_dual_axis(df: pd.DataFrame, x: str) -> Callable:
     return plot_y1
 
 
+def plot_bar_dual_y(
+    df: pd.DataFrame, x: str, y1: str, y2: str, aggfunc="mean", space=0.1, ax=None
+):
+    g = df[[x, y1, y2]].groupby(x).agg(aggfunc)
+
+    if ax is None:
+        fig, ax1 = plt.subplots()
+    else:
+        fig, ax1 = None, ax
+    ax2 = ax1.twinx()
+
+    ax1_xticks = [x - (0.5 - space) for x in range(len(g.index))]
+
+    ax1.bar(ax1_xticks, g[y1], width=(0.5 - space), align="edge", color="red", label=y1)
+    ax2.bar(g.index, g[y2], width=(0.5 - space), align="edge", label=y2)
+
+    ax1.set_ylabel(y1)
+    ax2.set_ylabel(y2, rotation=270, labelpad=14)
+    ax1.set_xlabel(x)
+
+    fig.legend()
+
+    return fig, (ax1, ax2)
+
+
 def plot_3d(df, x, y, z, g):
     fig = plt.figure()
     ax = Axes3D(fig)
