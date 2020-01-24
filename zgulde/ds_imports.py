@@ -64,9 +64,9 @@ iris = data("iris").cleanup_column_names()
 
 # plotting style defaults
 plt.rc("patch", edgecolor="black", force_edgecolor=True, facecolor="firebrick")
-plt.rc("axes", grid=True)
+plt.rc("axes", grid=True, fc="#FEFEFE")
 plt.rc("grid", linestyle=":", linewidth=0.8, alpha=0.7)
 plt.rc("axes.spines", right=False, top=False)
-plt.rc("figure", figsize=(11, 8))
+plt.rc("figure", figsize=(11, 8), fc="#FEFEFE")
 plt.rc("font", size=12.0)
 plt.rc("hist", bins=25)
