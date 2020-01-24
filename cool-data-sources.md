@@ -36,6 +36,8 @@
 -   [Used Cars](https://www.kaggle.com/austinreese/craigslist-carstrucks-data) (Careful), this one's a little over 1GB
 -   [Boston Crimes](https://www.kaggle.com/AnalyzeBoston/crimes-in-boston)
 -   [Several cool time series data sets](https://www.kaggle.com/shenba/time-series-datasets)
+-   [Wikipedia movie reviews](https://www.kaggle.com/jrobischon/wikipedia-movie-plots)
+-
 
 ## Other
 
