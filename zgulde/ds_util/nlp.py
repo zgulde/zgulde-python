@@ -1,3 +1,4 @@
+import re
 from typing import Iterable, Tuple, Union
 
 import nltk
@@ -62,3 +63,45 @@ def top_n_ngrams(s: pd.Series, top_n=3, ngrams=3):
     """
     f = comp(pd.Series, partial(nltk.ngrams, n=ngrams), str.split)
     return s.apply(f).stack().value_counts().head(top_n)
+
+
+def tokenize(string):
+    tokenizer = nltk.tokenize.ToktokTokenizer()
+    return tokenizer.tokenize(string, return_str=True)
+
+
+def stem(string):
+    ps = nltk.porter.PorterStemmer()
+    stems = [ps.stem(word) for word in string.split()]
+    string_of_stems = " ".join(stems)
+    return string_of_stems
+
+
+def lemmatize(string):
+    wnl = nltk.stem.WordNetLemmatizer()
+    lemmas = [wnl.lemmatize(word) for word in string.split()]
+    string_of_lemmas = " ".join(lemmas)
+    return string_of_lemmas
+
+
+STOPWORDS = stopword_list = nltk.corpus.stopwords.words("english")
+
+
+def clean(text: str, ascii=False) -> str:
+    if ascii:
+        text = text.encode("ascii", "ignore").decode("ascii")
+    text = text.strip().lower()
+    text = re.sub("\s+", " ", text)
+    text = re.sub("[^\s\w]", "", text)
+    # contractions
+    text = re.sub(r"what's", "what is ", text)
+    text = re.sub(r"\'s", " ", text)
+    text = re.sub(r"\'ve", " have ", text)
+    text = re.sub(r"can't", "can not ", text)
+    text = re.sub(r"n't", " not ", text)
+    text = re.sub(r"i'm", "i am ", text)
+    text = re.sub(r"\'re", " are ", text)
+    text = re.sub(r"\'d", " would ", text)
+    text = re.sub(r"\'ll", " will ", text)
+    text = re.sub(r"\'scuse", " excuse ", text)
+    return text
