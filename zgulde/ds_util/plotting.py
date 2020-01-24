@@ -33,7 +33,14 @@ def dual_axis(df: pd.DataFrame, x: str) -> Callable:
 
 
 def bar_dual_y(
-    df: pd.DataFrame, x: str, y1: str, y2: str, aggfunc="mean", space=0.1, ax=None
+    df: pd.DataFrame,
+    x: str,
+    y1: str,
+    y2: str,
+    aggfunc="mean",
+    space=0.1,
+    ax=None,
+    colors=["lightblue", "orange"],
 ):
     g = df[[x, y1, y2]].groupby(x).agg(aggfunc)
 
@@ -42,12 +49,17 @@ def bar_dual_y(
 
     ax1_xticks = [x - (0.5 - space) for x in range(len(g.index))]
 
-    ax1.bar(ax1_xticks, g[y1], width=(0.5 - space), align="edge", color="red", label=y1)
-    ax2.bar(g.index, g[y2], width=(0.5 - space), align="edge", label=y2)
+    ax1.bar(
+        ax1_xticks, g[y1], width=(0.5 - space), align="edge", color=colors[0], label=y1
+    )
+    ax2.bar(
+        g.index, g[y2], width=(0.5 - space), align="edge", label=y2, color=colors[1]
+    )
 
     ax1.set_ylabel(y1)
     ax2.set_ylabel(y2, rotation=270, labelpad=14)
     ax1.set_xlabel(x)
+    ax1.set(title=f"{aggfunc} of {y1} and {y2} by {x}")
 
     fig.legend()
 
@@ -115,8 +127,6 @@ def bar_by_group(x: pd.Series, g: pd.Series, aggfunc="mean", *args, **kwargs):
         ub, lb = xbar + ci, xbar - ci
         ax.hlines(xbar, -0.5, 3.5, ls="--", color="gray")
         ax.hlines([lb, ub], -0.5, 3.5, ls=":", color="gray")
-    else:
-        ax.hlines(x.agg(aggfunc), -0.5, 3.5, ls="--", color="gray")
     return fig, ax
 
 

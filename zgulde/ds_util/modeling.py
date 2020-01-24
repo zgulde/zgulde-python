@@ -139,8 +139,8 @@ classification_models = [
     (DecisionTreeClassifier(), {"max_depth": range(1, 11)}),
     (KNeighborsClassifier(), {"n_neighbors": range(1, 11)}),
     (LogisticRegression(), {"C": [0.01, 0.1, 1, 10, 100, 1000], "solver": ["lbfgs"]}),
-    (SVC(), {"kernel": ["rbf", "linear"]}),
-    (SVC(), {"kernel": ["poly"], "degree": [2]}),
+    # (SVC(), {"kernel": ["rbf", "linear"]}),
+    # (SVC(), {"kernel": ["poly"], "degree": [2]}),
 ]
 
 regression_models = [
@@ -148,6 +148,6 @@ regression_models = [
     (KNeighborsRegressor(), {"n_neighbors": range(1, 11)}),
     (LinearRegression(), {}),
     (Ridge(), {"alpha": [0.01, 0.1, 1, 10, 100, 1000]}),
-    (SVR(), {"kernel": ["rbf", "linear"]}),
-    (SVR(), {"kernel": ["poly"], "degree": [2]}),
+    # (SVR(), {"kernel": ["rbf", "linear"]}),
+    # (SVR(), {"kernel": ["poly"], "degree": [2]}),
 ]

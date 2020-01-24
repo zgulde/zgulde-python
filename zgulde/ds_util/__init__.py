@@ -3,8 +3,8 @@ import pandas as pd
 from pydataset import data
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
 
+import zgulde.ds_util.plotting as zplot
 from zgulde.ds_util.modeling import *
-from zgulde.ds_util.plotting import *
 
 # mode aggregation
 # tips.groupby('size').agg(stats.mode).apply(lambda s: s.apply(lambda v: v[0][0]))
