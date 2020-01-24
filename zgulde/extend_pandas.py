@@ -172,6 +172,43 @@ def get_scalers(df: DataFrame, columns, **kwargs) -> Callable:
     return partial(reduce, lambda df, f: df.pipe(f), scalers)
 
 
+def qcut(s: Series, *args, **kwargs):
+    """
+    Bin series values into discrete intervals.
+
+    Shortcut to pd.cut
+
+    Parameters
+    ----------
+
+    - args : positional arguments passed to ``pandas.cut``
+    - keyword : keyword arguments passed to ``pandas.cut``
+
+    Example
+    -------
+
+    >>> x = pd.Series(range(1, 7))
+    >>> x
+    0    1
+    1    2
+    2    3
+    3    4
+    4    5
+    5    6
+    dtype: int64
+    >>> x.qcut(2)
+    0    (0.999, 3.5]
+    1    (0.999, 3.5]
+    2    (0.999, 3.5]
+    3      (3.5, 6.0]
+    4      (3.5, 6.0]
+    5      (3.5, 6.0]
+    dtype: category
+    Categories (2, interval[float64]): [(0.999, 3.5] < (3.5, 6.0]]
+    """
+    return pd.qcut(s, *args, **kwargs)
+
+
 def cut(s: Series, *args, **kwargs):
     """
     Bin series values into discrete intervals.
@@ -1062,7 +1099,7 @@ def top_n(s: pd.Series, n=3, other_val="Other") -> pd.Series:
     dtype: object
     """
     top_n = s.value_counts().index[:n]
-    return pd.Series(np.where(s.isin(top_n), s, other_val))
+    return pd.Series(np.where(s.isin(top_n), s, other_val), name=s.name)
 
 
 def select(df, *args: str, **kwargs: str) -> pd.DataFrame:
@@ -1120,6 +1157,7 @@ pd.Series.ln = ln
 pd.Series.log = log
 pd.Series.log2 = log2
 pd.Series.outliers = outliers
+pd.Series.qcut = qcut
 pd.Series.top_n = top_n
 pd.Series.zscore = zscore
 
@@ -1143,7 +1181,7 @@ pd.DataFrame.xtab = crosstab
 pd.DataFrame.select = select
 pd.DataFrame.sql = sql
 
-series_extensions = [cut, get_scaler, ln, log, log2, outliers, top_n, zscore]
+series_extensions = [cut, get_scaler, ln, log, log2, outliers, qcut, top_n, zscore]
 
 data_frame_extensions = [
     chi2,
