@@ -60,12 +60,23 @@ def top_n_ngrams(s: pd.Series, top_n=3, ngrams=3):
     """
     Extract the top_n number of ngrams (n=ngrams) from s. s is assumed to be a
     pandas Series full of text data.
+
+    >>> s = pd.Series(['a b a b c', 'a b c'])
+    >>> top_n_ngrams(s, top_n=3, ngrams=2)
+    (a, b)    3
+    (b, c)    2
+    (b, a)    1
+    dtype: int64
     """
     f = comp(pd.Series, partial(nltk.ngrams, n=ngrams), str.split)
     return s.apply(f).stack().value_counts().head(top_n)
 
 
 def tokenize(string):
+    """
+    >>> tokenize("Hey, what's going on?")
+    "Hey , what ' s going on ?"
+    """
     tokenizer = nltk.tokenize.ToktokTokenizer()
     return tokenizer.tokenize(string, return_str=True)
 
@@ -73,15 +84,13 @@ def tokenize(string):
 def stem(string):
     ps = nltk.porter.PorterStemmer()
     stems = [ps.stem(word) for word in string.split()]
-    string_of_stems = " ".join(stems)
-    return string_of_stems
+    return " ".join(stems)
 
 
 def lemmatize(string):
     wnl = nltk.stem.WordNetLemmatizer()
     lemmas = [wnl.lemmatize(word) for word in string.split()]
-    string_of_lemmas = " ".join(lemmas)
-    return string_of_lemmas
+    return " ".join(lemmas)
 
 
 STOPWORDS = stopword_list = nltk.corpus.stopwords.words("english")
