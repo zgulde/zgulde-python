@@ -175,8 +175,32 @@ def multi_grid_search(models: GridCandidates, X, y, cv=4, **kwargs) -> pd.DataFr
 
 
 def inspect_coefs(lm, X):
+    """
+    View a summary of a linear model's coefficients.
+
+    Works for both linear and logistic regression models.
+
+    >>> import pydataset
+    >>> iris = pydataset.data('iris')
+    >>> X, y = iris[['Sepal.Length', 'Sepal.Width']], iris.Species
+    >>> lm = LogisticRegression(multi_class='auto', solver='lbfgs', random_state=123)
+    >>> lm = lm.fit(X, y)
+    >>> inspect_coefs(lm, X)
+                Sepal.Length  Sepal.Width
+    setosa         -2.708902     2.324024
+    versicolor      0.612733    -1.570588
+    virginica       2.096170    -0.753436
+
+    >>> tips = pydataset.data('tips')
+    >>> X, y = tips[['size', 'total_bill']], tips['tip']
+    >>> lm = LinearRegression().fit(X, y)
+    >>> inspect_coefs(lm, X)
+    total_bill    0.092713
+    size          0.192598
+    dtype: float64
+    """
     coef = lm.coef_
-    if coef.shape[0] > 1:
+    if len(coef.shape) > 1:
         return pd.DataFrame(coef, index=lm.classes_, columns=X.columns)
     else:
         return pd.Series(dict(zip(X.columns, lm.coef_.ravel()))).sort_values()
@@ -189,9 +213,10 @@ def inspect_feature_importances(tree, X):
 classification_models = [
     (DecisionTreeClassifier(), {"max_depth": range(1, 11)}),
     (KNeighborsClassifier(), {"n_neighbors": range(1, 11)}),
-    (LogisticRegression(), {"C": [0.01, 0.1, 1, 10, 100, 1000], "solver": ["lbfgs"]}),
-    # (SVC(), {"kernel": ["rbf", "linear"]}),
-    # (SVC(), {"kernel": ["poly"], "degree": [2]}),
+    (
+        LogisticRegression(solver="lbfgs", multi_class="auto"),
+        {"C": [0.01, 0.1, 1, 10, 100, 1000]},
+    ),
 ]
 
 regression_models = [
@@ -199,6 +224,4 @@ regression_models = [
     (KNeighborsRegressor(), {"n_neighbors": range(1, 11)}),
     (LinearRegression(), {}),
     (Ridge(), {"alpha": [0.01, 0.1, 1, 10, 100, 1000]}),
-    # (SVR(), {"kernel": ["rbf", "linear"]}),
-    # (SVR(), {"kernel": ["poly"], "degree": [2]}),
 ]
