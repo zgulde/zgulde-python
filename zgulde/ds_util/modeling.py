@@ -102,6 +102,25 @@ def linear_regression(X, y, **kwargs):
 
 
 def cv_results_to_df(grid: GridSearchCV) -> pd.DataFrame:
+    """
+    Presents GridSearchCV results as a data frame
+
+    >>> from pydataset import data
+    >>> from sklearn.ensemble import RandomForestClassifier
+    >>> iris = data('iris')
+    >>> X, y = iris[['Petal.Length', 'Sepal.Length']], iris.Species
+    >>> params = {'max_depth': [3, 4, 6], 'n_estimators': [6, 12]}
+    >>> algo = RandomForestClassifier(random_state=123)
+    >>> grid = GridSearchCV(algo, params, cv=8, iid=False).fit(X, y)
+    >>> cv_results_to_df(grid)
+       max_depth  n_estimators     score                   model
+    0          3             6  0.946429  RandomForestClassifier
+    1          3            12  0.932540  RandomForestClassifier
+    2          4             6  0.946429  RandomForestClassifier
+    3          4            12  0.939484  RandomForestClassifier
+    4          6             6  0.952381  RandomForestClassifier
+    5          6            12  0.945437  RandomForestClassifier
+    """
     results = grid.cv_results_
     params_and_scores = zip(results["params"], results["mean_test_score"])
     df = pd.DataFrame([dict(**p, score=s) for p, s in params_and_scores])
@@ -114,12 +133,44 @@ GridCandidates = List[
 ]
 
 
-def multi_grid_search(models: GridCandidates, X, y, cv=4) -> pd.DataFrame:
-    return pd.concat(
-        [
-            cv_results_to_df(GridSearchCV(model, params, cv=cv).fit(X, y))
-            for model, params in models
-        ]
+def multi_grid_search(models: GridCandidates, X, y, cv=4, **kwargs) -> pd.DataFrame:
+    """
+    combine grid searches for multiple models
+
+    kwargs are passed along to GridSearchCV
+
+    >>> from sklearn.linear_model import Ridge, LinearRegression
+    >>> from sklearn.ensemble import RandomForestRegressor
+    >>> from pydataset import data
+    >>> tips = data('tips')
+    >>> X, y = tips[['total_bill', 'size']], tips.tip
+    >>> models = []
+    >>> models += [(Ridge(), {'alpha': [.1, 1, 10]})]
+    >>> models += [(RandomForestRegressor(random_state=123), {'max_depth': range(3, 5), 'n_estimators': [3, 7]})]
+    >>> models += [(LinearRegression(), {})]
+    >>> multi_grid_search(models, X, y)
+       alpha     score                  model  max_depth  n_estimators
+    0   10.0  0.458305                  Ridge        NaN           NaN
+    1    1.0  0.457351                  Ridge        NaN           NaN
+    2    0.1  0.457235                  Ridge        NaN           NaN
+    3    NaN  0.457221       LinearRegression        NaN           NaN
+    4    NaN  0.325329  RandomForestRegressor        3.0           7.0
+    5    NaN  0.294933  RandomForestRegressor        4.0           7.0
+    6    NaN  0.272333  RandomForestRegressor        3.0           3.0
+    7    NaN  0.254083  RandomForestRegressor        4.0           3.0
+    """
+    return (
+        pd.concat(
+            [
+                cv_results_to_df(
+                    GridSearchCV(model, params, cv=cv, n_jobs=-1, **kwargs).fit(X, y)
+                )
+                for model, params in models
+            ],
+            sort=False,
+        )
+        .sort_values(by="score", ascending=False)
+        .reset_index(drop=True)
     )
 
 
