@@ -13,6 +13,7 @@ def display_markdown(cell, output_slide_seperator=True, classes=None):
 
 def display_code(cell, show_source=True, show_execute_results=True):
     # TODO: display cell["execution_count"]
+    print("")
     if show_source:
         print("```python")
         print("".join(cell["source"]))
@@ -35,6 +36,7 @@ def display_code(cell, show_source=True, show_execute_results=True):
         else:
             # TODO: raise?
             pass
+    print("")
 
 
 if __name__ == "__main__":
@@ -48,13 +50,19 @@ if __name__ == "__main__":
         "--show-source",
         action="store_true",
         default=False,
-        help="Include the python source code in the slides default: %(default)s",
+        help="Include the python source code in the slides. default: %(default)s",
     )
     parser.add_argument(
         "--show-execute-results",
         action="store_true",
         default=False,
-        help="Include plaintext output from python code in the slides default: %(default)s",
+        help="Include plaintext output from python code in the slides. default: %(default)s",
+    )
+    parser.add_argument(
+        "--html-boilerplate",
+        action="store_true",
+        default=False,
+        help="Include html boilerplate in output. default: $(default)s",
     )
     parser.add_argument("notebook", help="path to the jupyter notebook file")
 
@@ -65,6 +73,11 @@ if __name__ == "__main__":
         sys.exit(1)
 
     notebook = json.load(open(args.notebook))
+
+    if args.html_boilerplate:
+        print(
+            '<html><head><meta charset="utf-8"/><title>My Presentation</title></head><body><textarea id="source">'
+        )
 
     # we assume the first cell is the title slide
     title_slide = notebook["cells"][0]
@@ -86,3 +99,14 @@ if __name__ == "__main__":
         else:
             # TODO: handle raw data type
             pass
+
+    if args.html_boilerplate:
+        print(
+            """
+            </textarea>
+            <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+            <script>var slideshow = remark.create({slideNumberFormat: ''})</script>
+            </body>
+            </html>
+            """
+        )
