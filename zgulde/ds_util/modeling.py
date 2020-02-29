@@ -106,20 +106,18 @@ def cv_results_to_df(grid: GridSearchCV) -> pd.DataFrame:
     Presents GridSearchCV results as a data frame
 
     >>> from pydataset import data
-    >>> from sklearn.ensemble import RandomForestClassifier
+    >>> from sklearn.linear_model import LogisticRegression
     >>> iris = data('iris')
     >>> X, y = iris[['Petal.Length', 'Sepal.Length']], iris.Species
-    >>> params = {'max_depth': [3, 4, 6], 'n_estimators': [6, 12]}
-    >>> algo = RandomForestClassifier(random_state=123)
+    >>> params = {'penalty': ['none', 'l2'], 'fit_intercept': [True, False]}
+    >>> algo = LogisticRegression(random_state=123)
     >>> grid = GridSearchCV(algo, params, cv=8, iid=False).fit(X, y)
     >>> cv_results_to_df(grid)
-       max_depth  n_estimators     score                   model
-    0          3             6  0.946429  RandomForestClassifier
-    1          3            12  0.932540  RandomForestClassifier
-    2          4             6  0.946429  RandomForestClassifier
-    3          4            12  0.939484  RandomForestClassifier
-    4          6             6  0.952381  RandomForestClassifier
-    5          6            12  0.945437  RandomForestClassifier
+       fit_intercept penalty     score               model
+    0           True    none  0.953216  LogisticRegression
+    1           True      l2  0.960161  LogisticRegression
+    2          False    none  0.926170  LogisticRegression
+    3          False      l2  0.933114  LogisticRegression
     """
     results = grid.cv_results_
     params_and_scores = zip(results["params"], results["mean_test_score"])
