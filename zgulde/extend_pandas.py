@@ -61,7 +61,7 @@ import re
 import sqlite3
 from functools import partial, reduce
 from tempfile import NamedTemporaryFile
-from typing import Callable, List, Tuple, Union, cast
+from typing import Callable, Generator, List, Tuple, Union, cast
 
 import numpy as np
 import pandas as pd
@@ -1102,6 +1102,24 @@ def top_n(s: pd.Series, n=3, other_val="Other") -> pd.Series:
     return pd.Series(np.where(s.isin(top_n), s, other_val), name=s.name)
 
 
+def pluck(df: pd.DataFrame, *cols: str) -> List[pd.Series]:
+    """
+    >>> df = pd.DataFrame({'x': [1, 2, 3], 'y': ['a', 'b', 'c']})
+    >>> x, y = df.pluck('x', 'y')
+    >>> x
+    0    1
+    1    2
+    2    3
+    Name: x, dtype: int64
+    >>> y
+    0    a
+    1    b
+    2    c
+    Name: y, dtype: object
+    """
+    return [df[col] for col in cols]
+
+
 def select(df, *args: str, **kwargs: str) -> pd.DataFrame:
     """
     Return specified columns from a dataframe, optionally renaming some.
@@ -1172,6 +1190,7 @@ pd.DataFrame.__lshift__ = pipe
 pd.DataFrame.n_outliers = n_outliers
 pd.DataFrame.nna = nnull
 pd.DataFrame.nnull = nnull
+pd.DataFrame.pluck = pluck
 pd.DataFrame.__rshift__ = pipe
 pd.DataFrame.rformula = rformula
 pd.DataFrame.ttest_2samp = ttest_2samp
@@ -1193,6 +1212,7 @@ data_frame_extensions = [
     hdtl,
     nnull,
     n_outliers,
+    pluck,
     ttest,
     ttest_2samp,
     unnest,
