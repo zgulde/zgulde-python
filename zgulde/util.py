@@ -19,22 +19,37 @@ from typing import (
 )
 
 
-def md5(s):
+def md5(s: str) -> str:
+    """
+    >>> md5('abc')
+    '900150983cd24fb0d6963f7d28e17f72'
+    """
     return hashlib.md5(s.encode("utf8")).hexdigest()
 
 
-def sha256(s):
+def sha256(s: str) -> str:
+    """
+    >>> sha256('abc')
+    'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'
+    """
     return hashlib.sha256(s.encode("utf8")).hexdigest()
 
 
-def slurp(fp):
+def slurp(fp) -> str:
     with open(fp) as f:
         return f.read()
 
 
-def spit(fp, content, mode="w+"):
-    with open(fp) as f:
+def spit(fp: str, content, mode="w+"):
+    """
+    Write `content` to `fp`. Will overwrite the file if it exists.
+    """
+    with open(fp, "w+") as f:
         f.write(content)
+
+
+def readlines(fp: str) -> List[str]:
+    return slurp(fp).strip().split("\n")
 
 
 def pluck(d: Dict, *ks: str):

@@ -172,7 +172,7 @@ def multi_grid_search(models: GridCandidates, X, y, cv=4, **kwargs) -> pd.DataFr
     )
 
 
-def inspect_coefs(lm, X):
+def inspect_coefs(lm, X) -> Union[pd.Series, pd.DataFrame]:
     """
     View a summary of a linear model's coefficients.
 
@@ -198,13 +198,28 @@ def inspect_coefs(lm, X):
     dtype: float64
     """
     coef = lm.coef_
-    if len(coef.shape) > 1:
+    if len(coef.shape) > 1:  # logistic
         return pd.DataFrame(coef, index=lm.classes_, columns=X.columns)
-    else:
+    else:  # linear
         return pd.Series(dict(zip(X.columns, lm.coef_.ravel()))).sort_values()
 
 
-def inspect_feature_importances(tree, X):
+def inspect_feature_importances(tree, X) -> pd.Series:
+    """
+    View a summary of a decision tree's feature importances.
+
+    >>> import pydataset
+    >>> iris = pydataset.data('iris')
+    >>> X, y = iris.drop(columns='Species'), iris.Species
+    >>> tree = DecisionTreeClassifier(random_state=123)
+    >>> tree = tree.fit(X, y)
+    >>> inspect_feature_importances(tree, X)
+    Sepal.Width     0.000000
+    Sepal.Length    0.026667
+    Petal.Width     0.422611
+    Petal.Length    0.550723
+    dtype: float64
+    """
     return pd.Series(dict(zip(X.columns, tree.feature_importances_))).sort_values()
 
 
