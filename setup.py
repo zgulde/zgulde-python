@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="zgulde",
-    version="0.0.39",
+    version="0.0.40",
     author="Zach Gulde",
     author_email="zachgulde@gmail.com",
     description="A Small Person Utility Library",
@@ -18,5 +18,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    install_requires=["pandas==0.25.3"],
+    install_requires=["pandas>=1.0.1", "matplotlib>=2.2.0", "scikit-learn>=0.22.1"],
 )
