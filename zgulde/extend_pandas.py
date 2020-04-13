@@ -69,6 +69,7 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import cm
 from pandas import DataFrame, Series
+import patsy
 from scipy.stats import chi2_contingency, ttest_1samp, ttest_ind
 
 column_name_re = re.compile(r"[^a-zA-Z_0-9]")
@@ -948,12 +949,8 @@ def rformula(df, formula):
     """
     Split a data frame into X and y based on an R Formula.
 
-    Implements a limited subset of the r formula langauge. Formulas like the
-    following are supported:
-
-        y ~ x
-        y ~ x1 + x2
-        y ~ .
+    Based on patsy formulas. See
+    https://patsy.readthedocs.io/en/latest/formulas.html for valid formulas.
 
     Returns
     -------
@@ -969,44 +966,50 @@ def rformula(df, formula):
     >>> X, y = df.rformula('a ~ b')
     >>> X
        b
-    0  4
-    1  5
-    2  6
+    0  4.0
+    1  5.0
+    2  6.0
     >>> y
-    0    1
-    1    2
-    2    3
-    Name: a, dtype: int64
+         a
+    0  1.0
+    1  2.0
+    2  3.0
     >>> X, y = df.rformula('c ~ a + b')
     >>> X
-       a  b
-    0  1  4
-    1  2  5
-    2  3  6
+       a    b
+    0  1.0  4.0
+    1  2.0  5.0
+    2  3.0  6.0
     >>> y
-    0    7
-    1    8
-    2    9
-    Name: c, dtype: int64
-    >>> X, y = df.rformula('b ~ .')
+         c
+    0  7.0
+    1  8.0
+    2  9.0
+    >>> X, y = df.rformula('b ~ a + a:c')
     >>> X
-       a  c
-    0  1  7
-    1  2  8
-    2  3  9
+         a   a:c
+    0  1.0   7.0
+    1  2.0  16.0
+    2  3.0  27.0
     >>> y
-    0    4
-    1    5
-    2    6
-    Name: b, dtype: int64
+         b
+    0  4.0
+    1  5.0
+    2  6.0
+    >>> X, y = df.rformula('b ~ a*c')
+    >>> X
+         a    c   a:c
+    0  1.0  7.0   7.0
+    1  2.0  8.0  16.0
+    2  3.0  9.0  27.0
+    >>> y
+         b
+    0  4.0
+    1  5.0
+    2  6.0
     """
-    target, indep_vars = re.sub(r"\s", "", formula).split("~")
-    y = df[target]
-    if indep_vars == ".":
-        X = df.drop(columns=target)
-    else:
-        X = df[indep_vars.split("+")]
-    return X, y
+    y, X = patsy.dmatrices(formula, df, return_type="dataframe")
+    return X.drop(columns="Intercept"), y
 
 
 def pipe(df: DataFrame, fn: Callable):
