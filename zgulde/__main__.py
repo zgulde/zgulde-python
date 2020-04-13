@@ -1,11 +1,10 @@
-import json
+message = """
+Runnable modules contained here
 
-info = {
-    "name": "Zach Gulde",
-    "email": {"personal": "zach.gulde@gmail.com", "work": "zach@codeup.com"},
-    "twitter": "@zgulde",
-    "github": "https://github.com/zgulde",
-    "url": "https://zgul.de",
-}
+  zgulde.nbslides     -- (WIP): turn jupyter notebooks into remark.js slides
+  zgulde.gitlog       -- make git logs more machine readable
+  zgulde.em           -- extract markdown documents from code comments
+  zgulde.contact_info
+""".strip()
 
-print(json.dumps(info, indent=4))
+print(message)
