@@ -11,6 +11,25 @@ import zgulde.extend_pandas
 
 # TODO: refactor some of these to iterate over .groupby instead of unique values
 
+# plotting style defaults -- plt.style.use(style) -- mpl.style.use(style)
+style = {
+    "animation.html": "html5",
+    "axes.facecolor": "#FEFEFE",
+    "axes.grid": True,
+    "axes.spines.right": False,
+    "axes.spines.top": False,
+    "figure.facecolor": "#FEFEFE",
+    "figure.figsize": (11, 8),
+    "font.size": 13.0,
+    "grid.alpha": 0.7,
+    "grid.linestyle": ":",
+    "grid.linewidth": 0.8,
+    "hist.bins": 25,
+    "patch.edgecolor": "black",
+    "patch.facecolor": "firebrick",
+    "patch.force_edgecolor": True,
+}
+
 
 def dual_axis(df: pd.DataFrame, x: str) -> Callable:
     """
@@ -136,6 +155,29 @@ def scatter_by_group(df: pd.DataFrame, x: str, y: str, g: str):
     plt.xlabel(x)
     plt.ylabel(y)
     plt.legend(title=g)
+
+
+def group_proportions(df: pd.DataFrame, x1: str, x2: str, proportions=False, ax=None):
+    """
+    Visualize the proportion of each group in x2 for each unique group in x1.
+
+    x1 and x2 should both be categorical variables.
+    """
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(13, 8))
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+    (
+        df.groupby(x1)[x2]
+        .apply(pd.Series.value_counts, normalize=proportions)
+        .unstack()
+        .plot.bar(stacked=True, width=0.9, ax=ax)
+    )
+    ax.set(ylabel="proportion" if proportions else "count")
+    ax.legend(title=x2)
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=0)
+
+    return ax
 
 
 # WIP below
