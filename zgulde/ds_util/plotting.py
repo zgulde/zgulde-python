@@ -4,6 +4,7 @@ from typing import Callable
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
 from mpl_toolkits.mplot3d import Axes3D
 from pydataset import data
 
@@ -19,7 +20,7 @@ style = {
     "axes.spines.right": False,
     "axes.spines.top": False,
     "figure.facecolor": "#FEFEFE",
-    "figure.figsize": (11, 8),
+    "figure.figsize": (16, 9),
     "font.size": 13.0,
     "grid.alpha": 0.7,
     "grid.linestyle": ":",
@@ -164,7 +165,7 @@ def group_proportions(df: pd.DataFrame, x1: str, x2: str, proportions=False, ax=
     x1 and x2 should both be categorical variables.
     """
     if ax is None:
-        fig, ax = plt.subplots(figsize=(13, 8))
+        fig, ax = plt.subplots()
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
     (
@@ -180,6 +181,26 @@ def group_proportions(df: pd.DataFrame, x1: str, x2: str, proportions=False, ax=
     return ax
 
 
+def crosstab_heatmap(
+    x: pd.Series,
+    y: pd.Series,
+    ax=None,
+    values=None,
+    aggfunc=None,
+    normalize=False,
+    cmap="Purples",
+    fmt=None,
+):
+    if ax is None:
+        fig, ax = plt.subplots()
+    if fmt is None:
+        fmt = ".2f" if normalize or aggfunc is not None else "d"
+
+    ctab = pd.crosstab(x, y, values=values, aggfunc=aggfunc)
+    sns.heatmap(ctab, annot=True, cmap=cmap, fmt=fmt)
+    return ax
+
+
 def crosstab_scatter(
     x: pd.Series, y: pd.Series, ax=None, scale=1000, values=None, aggfunc=None
 ):
@@ -191,7 +212,7 @@ def crosstab_scatter(
     Internally, x, y, values, and aggfunc are all passed to pd.crosstab.
     """
     if ax is None:
-        fig, ax = plt.subplots(figsize=(12, 8))
+        fig, ax = plt.subplots()
 
     ctab = pd.crosstab(x, y, values=values, aggfunc=aggfunc)
     ctab = ctab.reset_index().melt(id_vars=x.name)
@@ -207,10 +228,9 @@ def crosstab_scatter(
     ax.vlines(ctab.x_rank, *ax.get_ylim(), ls="--", color="grey", lw=0.8)
     ax.hlines(ctab.y_rank, *ax.get_xlim(), ls="--", color="grey", lw=0.8)
 
-    ax.set_xticks(ctab.x_rank.unique())
-    ax.set_xticklabels(ctab[x.name].unique())
-    ax.set_yticks(ctab.y_rank.unique())
-    ax.set_yticklabels(ctab[y.name].unique())
+    ax.set(xticks=ctab.x_rank.unique(), xticklabels=ctab[x.name].unique())
+    ax.set(yticks=ctab.y_rank.unique(), yticklabels=ctab[y.name].unique())
+    ax.set(xlabel=x.name, ylabel=y.name)
 
     ax.spines["right"].set_visible(False)
     ax.spines["top"].set_visible(False)
