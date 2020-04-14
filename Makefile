@@ -10,7 +10,7 @@ clean: ## Remove built docs and packaging artifacts
 	rm -rf .make .mypy_cache .pytest_cache .pytype
 
 .PHONY: release
-release: clean fmt test gh-pages ## Release a new version to pypi
+release: fmt test check-types gh-pages ## Release a new version to pypi
 	python3 setup.py sdist bdist_wheel
 	python3 -m twine upload dist/*
 
