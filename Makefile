@@ -14,29 +14,32 @@ release: clean fmt test gh-pages ## Release a new version to pypi
 	python3 setup.py sdist bdist_wheel
 	python3 -m twine upload dist/*
 
-.PHONY: docs gh-pages
-docs: ## Build the docs for extend_pandas
-	mkdir -p public
-	PYTHONPATH=. python doc/gen_extend_pandas_docs.py |\
-		rst2html.py --stylesheet-path=doc/style.css \
-		--template=doc/template.txt \
-		> public/index.html
-gh-pages: clean ## Build, commit, and push docs for the gh-pages branch
-	mkdir -p public
-	@if [[ ! -f .git/refs/heads/gh-pages ]] ; then \
-		@echo '[make] Creating gh-pages branch';\
-		git --work-tree public checkout -q --orphan gh-pages;\
-		touch public/index.html;\
-		git --work-tree public add --all;\
-		git --work-tree public commit --quiet --message 'Update Docs';\
-		git checkout --quiet --force master;\
-	fi
-	git --work-tree public checkout gh-pages
-	make docs
-	git --work-tree public add -A
-	git --work-tree public commit --amend --no-edit
-	git checkout --force master
-	git push origin gh-pages --force
+# .PHONY: docs gh-pages
+# docs: ## Build the docs for extend_pandas
+# 	mkdir -p public
+# 	PYTHONPATH=. python doc/gen_extend_pandas_docs.py |\
+# 		rst2html.py --stylesheet-path=doc/style.css \
+# 		--template=doc/template.txt \
+# 		> public/index.html
+# gh-pages: clean ## Build, commit, and push docs for the gh-pages branch
+# 	mkdir -p public
+# 	@if [[ ! -f .git/refs/heads/gh-pages ]] ; then \
+# 		@echo '[make] Creating gh-pages branch';\
+# 		git --work-tree public checkout -q --orphan gh-pages;\
+# 		touch public/index.html;\
+# 		git --work-tree public add --all;\
+# 		git --work-tree public commit --quiet --message 'Update Docs';\
+# 		git checkout --quiet --force master;\
+# 	fi
+# 	git --work-tree public checkout gh-pages
+# 	make docs
+# 	git --work-tree public add -A
+# 	git --work-tree public commit --amend --no-edit
+# 	git checkout --force master
+# 	git push origin gh-pages --force
+
+docs:
+	sphinx-build docs output
 
 PY_FILES := $(shell find zgulde -name \*.py)
 

@@ -1,4 +1,7 @@
 """
+Pandas Extensions
+=================
+
 This module adds functionality to pandas Series and DataFrame objects. The
 objects in pandas will be modified by simply importing this module.
 
@@ -6,33 +9,33 @@ objects in pandas will be modified by simply importing this module.
 
 The following methods are added to all Series:
 
-- `cut`_ (bin): put data into bins; shortcut to pd.cut
-- `get_scaler`_: obtain a function that scales a series
-- `ln`_: natural log
-- `log2`_: log base 2
-- `log`_: log base 10
-- `outliers`_: detect outliers
-- `top_n`_: encode as the most frequent n values or "Other"
-- `zscore`_: obtain the z-score for every value
+- :py:func:`cut`: put data into bins; shortcut to pd.cut
+- :py:func:`get_scaler`: obtain a function that scales a series
+- :py:func:`ln`: natural log
+- :py:func:`log2`: log base 2
+- :py:func:`log`: log base 10
+- :py:func:`outliers`: detect outliers
+- :py:func:`top_n`: encode as the most frequent n values or "Other"
+- :py:func:`zscore`: obtain the z-score for every value
 
 and the following are added to all DataFrames:
 
-- `chi2`_: run chi square tests on all column combinations
-- `correlation_heatmap`_: plot a heatmap of the correlations
-- `crosstab`_ (xtab): shortcut to pd.crosstab
-- `drop_outliers`_: remove outliers
-- `get_scalers`_: obtain a function that scales multiple columns
-- `hdtl`_: look at the head and tail of the data frame
-- `nnull`_ (nna): summarize the number of missing values
-- `n_outliers`_: summarize the number of outliers in each numeric column
-- `ttest`_: run multiple 1 sample t-tests for multiple categories
-- `ttest_2samp`_: run multiple 2 sample t-tests for multiple categories
-- `select`_: select and rename columns in a dataframe
-- `sql`_: run SQL queries against a dataframe
-- `unnest`_: handle multiple values in a single cell
+- :py:func:`chi2`: run chi square tests on all column combinations
+- :py:func:`correlation_heatmap`: plot a heatmap of the correlations
+- :py:func:`crosstab` (xtab): shortcut to pd.crosstab
+- :py:func:`drop_outliers`: remove outliers
+- :py:func:`get_scalers`: obtain a function that scales multiple columns
+- :py:func:`hdtl`: look at the head and tail of the data frame
+- :py:func:`nnull` (nna): summarize the number of missing values
+- :py:func:`n_outliers`: summarize the number of outliers in each numeric column
+- :py:func:`ttest`: run multiple 1 sample t-tests for multiple categories
+- :py:func:`ttest_2samp`: run multiple 2 sample t-tests for multiple categories
+- :py:func:`select`: select and rename columns in a dataframe
+- :py:func:`sql`: run SQL queries against a dataframe
+- :py:func:`unnest`: handle multiple values in a single cell
 
 It also defines the left and right shift operators to be similar to
-``pandas.DataFrame.pipe``. For example:
+:py:func:`pandas.DataFrame.pipe`. For example:
 
 >>> import pandas as pd
 >>> import numpy as np
@@ -85,14 +88,12 @@ def cleanup_column_names(df: DataFrame, inplace=False) -> DataFrame:
     Returns a data frame with the column names cleaned up. Special characters
     are removed and spaces, dots, and dashes are replaced with underscores.
 
-    Parameters
-    ----------
+    ... rubric:: Parameters
 
-    - inplace : Whether or not to modify the data frame in-place and return
-                None.
+    - inplace : bool
+       Whether or not to modify the data frame in-place and return None.
 
-    Example
-    -------
+    ... rubric:: Example
 
     >>> df = pd.DataFrame({'*Feature& A': [1, 2], ' feature.b  ': [2, 3], 'FEATURE-C': [3, 4]})
     >>> df
@@ -128,16 +129,14 @@ def get_scalers(df: DataFrame, columns, **kwargs) -> Callable:
 
     See the docstring for Series.get_scaler for more details.
 
-    Parameters
-    ----------
+    .. rubric:: Parameters
 
     - columns : Either a single string, or a list of strings where each string
                 is a column name to scale
     - kwargs : any additional arguments are passed to Series.get_scaler for each
                column specified
 
-    Example
-    -------
+    .. rubric:: Example
 
     >>> df = pd.DataFrame(dict(x=[1, 2, 3, 10], y=[-10, 1, 1, 2]))
     >>> df
@@ -179,14 +178,12 @@ def qcut(s: Series, *args, **kwargs):
 
     Shortcut to pd.cut
 
-    Parameters
-    ----------
+    .. rubric:: Parameters
 
     - args : positional arguments passed to ``pandas.cut``
     - keyword : keyword arguments passed to ``pandas.cut``
 
-    Example
-    -------
+    .. rubric:: Example
 
     >>> x = pd.Series(range(1, 7))
     >>> x
@@ -216,14 +213,12 @@ def cut(s: Series, *args, **kwargs):
 
     Shortcut to pd.cut
 
-    Parameters
-    ----------
+    .. rubric:: Parameters
 
     - args : positional arguments passed to ``pandas.cut``
     - keyword : keyword arguments passed to ``pandas.cut``
 
-    Example
-    -------
+    .. rubric:: Example
 
     >>> x = pd.Series(range(1, 7))
     >>> x
@@ -257,7 +252,7 @@ def cut(s: Series, *args, **kwargs):
 
 
 def get_scaler(s: Series, how="zscore"):
-    """
+    r"""
     Obtain a function that will scale the series on a data frame.
 
     The returned function accepts a data frame and returns the data frame with
@@ -266,17 +261,15 @@ def get_scaler(s: Series, how="zscore"):
     This can be useful to make sure you apply the same transformation to both
     training and test data sets.
 
-    - zscore = (x - mu) / sigma
-    - minmax = (x - min) / (max - min)
+    - A Z score is given by :math:`{x - \mu} / \sigma`.
+    - Min-max scaling is given by :math:`(x - \text{min}) / (\text{max} - \text{min})`
 
-    Parameters
-    ----------
+    .. rubric:: Parameters
 
     - how : One of {'zscore', 'minmax'} to either apply z-score or min-max
             scaling
 
-    Example
-    -------
+    .. rubric:: Example
 
     >>> df = pd.DataFrame(dict(x=[1, 2, 3, 4, 5, 1000], y=[1000, 2, 3, 4, 5, 6]))
     >>> scale_x = df.x.get_scaler()
@@ -334,10 +327,11 @@ def zscore(s: Series) -> Series:
     """
     Returns the z-score for every value in the series.
 
-    Z = (x - mu) / sigma
+    .. math::
 
-    Example
-    -------
+       Z = (x - mu) / sigma
+
+    .. rubric:: Example
 
     >>> x = pd.Series([1, 2, 3, 4, 5, 6, 7, 8, 9])
     >>> x
@@ -373,16 +367,14 @@ def drop_outliers(df: DataFrame, cols: Union[str, List[str]], **kwargs) -> Serie
     See the docs for .outliers for more details on parameters, and to customize
     how the outliers are detected.
 
-    Parameters
-    ----------
+    .. rubric:: Parameters
 
     cols : either a string or a list of strings of which column(s) to drop the
            outliers in
     kwargs : additional key-word arguments passed on to
              ``pandas.Series.outliers``
 
-    Example
-    -------
+    .. rubric:: Example
 
     >>> df = pd.DataFrame(dict(x=[1, 2, 3, 4, 5, 1000], y=[1000, 2, 3, 4, 5, 6]))
     >>> df
@@ -424,21 +416,18 @@ def n_outliers(df: DataFrame, **kwargs) -> Series:
     """
     Provide a summary of the number of outliers in each numeric column.
 
-    Parameters
-    ----------
+    .. rubric:: Parameters
 
     - kwargs : any additional arguments to pass along to
                ``pandas.Series.outliers``
 
-    Returns
-    -------
+    .. rubric:: Returns
 
-    A ``pandas.DataFrame`` indexed by the column names of the the data frame,
+    A :py:func:`pandas.DataFrame` indexed by the column names of the the data frame,
     with columns that indicate the number of outliers and the percentage of
     outliers in each column.
 
-    Example
-    -------
+    .. rubric:: Example
 
     >>> x = [1, 2, 3, 4, 5, 1, 2, 3, 4, 5]
     >>> y = [1, 2, 3, 4, 5, 100, 2, 3, 4, 5]
@@ -471,14 +460,12 @@ def outliers(s: Series, how="iqr", k=1.5, std_cutoff=2) -> Series:
     """
     Detect outliers in the series.
 
-    Returns
-    -------
+    .. rubric:: Returns
 
     A pandas Series of boolean values indicating whether each point is an
     outlier or not.
 
-    Parameters
-    ----------
+    .. rubric:: Parameters
 
     how : {'iqr', 'std'}, default 'iqr'
         - 'iqr' : identify outliers based on whether they are > q3 + k * iqr
@@ -490,8 +477,7 @@ def outliers(s: Series, how="iqr", k=1.5, std_cutoff=2) -> Series:
     std_cutoff : cutoff for identifying an outlier based on standard deviation.
                  Ignored when how='iqr'. Default 2
 
-    Example
-    -------
+    .. rubric:: Example
 
     >>> df = pd.DataFrame(dict(x=[1, 2, 3, 4, 5, 6, 100],
     ...                        y=[-100, 5, 3, 4, 1, 2, 0]))
@@ -531,10 +517,9 @@ def nnull(df: DataFrame, axis=0) -> DataFrame:
     """
     Provide a summary of null values in each column.
 
-    alias of nna
+    alias of :py:func:`nna`
 
-    Example
-    -------
+    .. rubric:: Example
 
     >>> df = pd.DataFrame(dict(x=[1, 2, np.nan], y=[4, np.nan, np.nan]))
     >>> df
@@ -564,8 +549,7 @@ def unnest(df: DataFrame, col: str, split=True, sep=",", reset_index=True) -> Da
     Turns a column with multiple values in each row in it into separate rows,
     each with a single value.
 
-    Parameters
-    ----------
+    .. rubric:: Parameters
 
     - col : name of the column to unnest
     - split : default True. whether or not to split the data in the column. Set
@@ -575,8 +559,7 @@ def unnest(df: DataFrame, col: str, split=True, sep=",", reset_index=True) -> Da
                     data frame. If False, the resulting data frame will have an
                     index that could contain duplicates.
 
-    Example
-    -------
+    .. rubric:: Example
 
     >>> df = pd.DataFrame(dict(x=list('abc'), y=['a,b,c', 'd,e', 'f']))
     >>> df
@@ -651,13 +634,11 @@ def hdtl(df: DataFrame, n=3) -> DataFrame:
     """
     Return the head and the tail of the data frame.
 
-    Parameters
-    ----------
+    .. rubric:: Parameters
 
     - n : number of rows to get from both the head and tail
 
-    Example
-    -------
+    .. rubric:: Example
 
     >>> df = pd.DataFrame(dict(x=np.arange(10), y=np.arange(10)))
     >>> df
@@ -692,8 +673,7 @@ def log(s: Series):
     """
     Returns the log base 10 of the values in the series using np.log10
 
-    Example
-    -------
+    .. rubric:: Example
 
     >>> x = pd.Series([1, 10, 100, 1000])
     >>> x
@@ -716,8 +696,7 @@ def ln(s: Series):
     """
     Returns the natural log of the values in the series using np.log
 
-    Example
-    -------
+    .. rubric:: Example
 
     >>> x = pd.Series([1, np.e, np.e ** 2, np.e ** 3])
     >>> x
@@ -740,8 +719,7 @@ def log2(s: Series):
     """
     Returns the log base 2 of the values in the series using np.log2
 
-    Example
-    -------
+    .. rubric:: Example
 
     >>> x = pd.Series([1, 2,4, 8, 16])
     >>> x
@@ -766,8 +744,7 @@ def crosstab(df: DataFrame, rows, cols, values=None, **kwargs) -> DataFrame:
     """
     Shortcut to call to pd.crosstab.
 
-    Parameters
-    ----------
+    .. rubric:: Parameters
 
     - rows : the name of the columns that will make up the rows in resulting
              contingency table
@@ -779,8 +756,7 @@ def crosstab(df: DataFrame, rows, cols, values=None, **kwargs) -> DataFrame:
     - kwargs : any additional key word arguments to pass along to
                ``pd.crosstab``
 
-    Example
-    -------
+    .. rubric:: Example
 
     >>> df = pd.DataFrame(dict(x=list('aaabbb'), y=list('cdcdcd'), z=range(6)))
     >>> df
@@ -820,13 +796,11 @@ def ttest(df: DataFrame, target: str) -> DataFrame:
     Runs a 1 sample t-test comparing the specified target variable to the
     overall mean among all of the possible subgroups.
 
-    Parameters
-    ----------
+    .. rubric:: Parameters
 
     - target : name of the column that holds the target (continuous) variable
 
-    Example
-    -------
+    .. rubric:: Example
 
     >>> from seaborn import load_dataset
     >>> tips = load_dataset('tips')
@@ -866,13 +840,11 @@ def ttest_2samp(df: DataFrame, target: str) -> DataFrame:
     that the test was performed based on belonging to that unique value vs not
     belonging to that group.
 
-    Parameters
-    ----------
+    .. rubric:: Parameters
 
     - target : name of the column that holds the target (continuous) variable
 
-    Example
-    -------
+    .. rubric:: Example
 
     >>> from seaborn import load_dataset
     >>> tips = load_dataset('tips')
@@ -907,8 +879,7 @@ def chi2(df: DataFrame) -> Tuple[DataFrame, DataFrame]:
     Performs a chi squared contingency table test between all the combinations
     of two columns in the data frame.
 
-    Returns
-    -------
+    .. rubric:: Returns
 
     (pvals, chi2s)
 
@@ -917,8 +888,7 @@ def chi2(df: DataFrame) -> Tuple[DataFrame, DataFrame]:
     first are the p-values, the values in the second are the chi square test
     statistics.
 
-    Example
-    -------
+    .. rubric:: Example
 
     >>> from seaborn import load_dataset
     >>> tips = load_dataset('tips')
@@ -952,15 +922,13 @@ def rformula(df, formula):
     Based on patsy formulas. See
     https://patsy.readthedocs.io/en/latest/formulas.html for valid formulas.
 
-    Returns
-    -------
+    .. rubric:: Returns
 
     A tuple where the first element is a pandas DataFrame containing the
     independent variables, and the second is a pandas Series containing the
     dependent variable.
 
-    Example
-    -------
+    .. rubric:: Example
 
     >>> df = pd.DataFrame(dict(a=[1, 2, 3], b=[4, 5, 6], c=[7, 8, 9]))
     >>> X, y = df.rformula('a ~ b')
@@ -1025,8 +993,7 @@ def sql(
     The dataframe is converted to a sqlite database and the provided query is
     run against it. As such, any SQL that is valid in sqlite is supported.
 
-    Parameters
-    ----------
+    .. rubric:: Parameters
 
     - query: The SQL query to run
     - table: (optional) name of the table to call the dataframe. Defaults to `df`
@@ -1036,8 +1003,7 @@ def sql(
     - index: whether or not to include the dataframe's index in the table that
              is queried against.
 
-    Examples
-    --------
+    .. rubric:: Examples
 
     >>> df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': ['a', 'a', 'b']})
     >>> df
@@ -1076,20 +1042,17 @@ def top_n(s: pd.Series, n=3, other_val="Other") -> pd.Series:
     Convert the series to the most frequent n values and use other_val for the
     rest.
 
-    Parameters
-    ----------
+    .. rubric:: Parameters
 
     - n: number of values to consider
     - other_val: value that will be used for everything that isn't the most
                  frequent n values
 
-    Returns
-    -------
+    .. rubric:: Returns
 
     A pandas Series
 
-    Examples
-    --------
+    .. rubric:: Examples
 
     >>> s = pd.Series(['a', 'a', 'b', 'b', 'c', 'd'])
     >>> s.top_n(2)
@@ -1127,19 +1090,16 @@ def select(df, *args: str, **kwargs: str) -> pd.DataFrame:
     """
     Return specified columns from a dataframe, optionally renaming some.
 
-    Parameters
-    ----------
+    .. rubric:: Parameters
 
     - args: strings that are column names to include
     - kwargs: any additional columns to rename
 
-    Returns
-    -------
+    .. rubric:: Returns
 
     A subset of the dataframe
 
-    Examples
-    --------
+    .. rubric:: Examples
 
     >>> df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]})
     >>> df

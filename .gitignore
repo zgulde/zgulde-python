@@ -11,3 +11,5 @@ Untitled.ipynb
 .mypy_cache
 .make
 
+docs
+output/
