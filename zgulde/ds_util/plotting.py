@@ -180,6 +180,44 @@ def group_proportions(df: pd.DataFrame, x1: str, x2: str, proportions=False, ax=
     return ax
 
 
+def crosstab_scatter(
+    x: pd.Series, y: pd.Series, ax=None, scale=1000, values=None, aggfunc=None
+):
+    """
+    Visualize the crosstabulation of x and y with a scatter plot where the size
+    of the points corresponds to the value of that cell in the crosstabulation.
+
+    For an aggregation other than counting, values and aggfunc can be passed.
+    Internally, x, y, values, and aggfunc are all passed to pd.crosstab.
+    """
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(12, 8))
+
+    ctab = pd.crosstab(x, y, values=values, aggfunc=aggfunc)
+    ctab = ctab.reset_index().melt(id_vars=x.name)
+    # min-max scale -- 0 to `scale`
+    ctab.value = ((ctab.value - ctab.value.min()) * scale) / (
+        ctab.value.max() - ctab.value.min()
+    )
+
+    ctab["x_rank"] = ctab[x.name].rank(method="dense")
+    ctab["y_rank"] = ctab[y.name].rank(method="dense")
+
+    ax.scatter(ctab.x_rank, ctab.y_rank, s=ctab.value)
+    ax.vlines(ctab.x_rank, *ax.get_ylim(), ls="--", color="grey", lw=0.8)
+    ax.hlines(ctab.y_rank, *ax.get_xlim(), ls="--", color="grey", lw=0.8)
+
+    ax.set_xticks(ctab.x_rank.unique())
+    ax.set_xticklabels(ctab[x.name].unique())
+    ax.set_yticks(ctab.y_rank.unique())
+    ax.set_yticklabels(ctab[y.name].unique())
+
+    ax.spines["right"].set_visible(False)
+    ax.spines["top"].set_visible(False)
+
+    return ax
+
+
 # WIP below
 arrowstyles = [
     "-",
