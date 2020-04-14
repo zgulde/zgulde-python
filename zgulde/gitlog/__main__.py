@@ -1,6 +1,6 @@
+import argparse
 import json
 import sys
-import argparse
 
 from .gitlog import get_commits
 

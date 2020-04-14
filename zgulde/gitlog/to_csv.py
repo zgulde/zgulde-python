@@ -1,8 +1,8 @@
 import logging
 import re
 import sys
-from subprocess import check_output
 from os import path
+from subprocess import check_output
 
 import pandas as pd
 

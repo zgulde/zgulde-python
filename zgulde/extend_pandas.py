@@ -65,11 +65,11 @@ from typing import Callable, Generator, List, Tuple, Union, cast
 
 import numpy as np
 import pandas as pd
+import patsy
 import seaborn as sns
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import cm
 from pandas import DataFrame, Series
-import patsy
 from scipy.stats import chi2_contingency, ttest_1samp, ttest_ind
 
 column_name_re = re.compile(r"[^a-zA-Z_0-9]")

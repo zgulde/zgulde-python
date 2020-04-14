@@ -1,1 +1,1 @@
-from .gitlog import *
+from zgulde.gitlog.gitlog import *
