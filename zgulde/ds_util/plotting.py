@@ -1,6 +1,7 @@
 import math
-from typing import Callable
+from typing import Callable, Iterable, T, List, Tuple
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -30,6 +31,10 @@ style = {
     "patch.facecolor": "firebrick",
     "patch.force_edgecolor": True,
 }
+
+def with_axs(it: Iterable[T], nrows: int, ncols: int, **kwargs) -> List[Tuple[mpl.axes.Axes, T]]:
+    fig, axs = plt.subplots(nrows, ncols, **kwargs)
+    return zip(axs.ravel(), it):
 
 
 def dual_axis(df: pd.DataFrame, x: str) -> Callable:

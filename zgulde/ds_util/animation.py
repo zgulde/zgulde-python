@@ -100,24 +100,6 @@ def tween(x1, x2, fn, n_points=50):
     return scaler.inverse_transform(xx_minmax_t)
 
 
-# @anim
-# def scale_xaxis(i):
-#     if i == 0:
-#         ax.set(title="Center x by subtracting the mean\n$x' = x - \\mu_x$")
-#     xx = mytween(ax.get_xlim()[0], x2.min() - .5)
-#     ax.set(xlim=(xx[i], ax.get_xlim()[1]))
-
-# anim.transform(x, x2, y, y)
-# anim.pause()
-
-# @anim
-# def scale_yaxis(i):
-#     if i == 0:
-#         ax.set(title="Center y by subtracting the mean\n$y' = y - \\mu_y$")
-#     yy = mytween(ax.get_ylim()[0], y2.min() - .5)
-#     ax.set(ylim=(yy[i], ax.get_ylim()[1]))
-
-
 class Animation:
     """
     Helper class for creating matplotlib animations.
