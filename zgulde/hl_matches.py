@@ -99,7 +99,7 @@ def _hl_all_matches(
     Does not handle nested groups.
     """
 
-    matches = re.finditer(regexp, subject)
+    matches = re.finditer(regexp, subject, re.MULTILINE)
 
     groupstarts, groupends, overallstarts, overallends = _starts_ends_overalls(matches)
 
