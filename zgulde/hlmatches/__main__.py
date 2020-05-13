@@ -4,7 +4,9 @@ TODO:
 
 - better layout
 - customize colors
-- handle a regex subject that looks like the formatting html (replace("<", "\\<")?)
+- handle a regex subject that looks like the formatting html
+    - HTML(...).format() auto escapes, but this might require tweaking
+      _hl_matches
 - cli for specifying custom colors
 - cleanup code
 - multiline? regex flags?
