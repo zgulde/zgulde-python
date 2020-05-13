@@ -13,6 +13,7 @@ TODO:
 - flag for all matches vs first match?
 """
 
+import sys
 from functools import partial
 from prompt_toolkit.application import Application
 from prompt_toolkit.buffer import Buffer
@@ -23,10 +24,29 @@ from prompt_toolkit.layout.layout import Layout
 from prompt_toolkit import HTML
 from zgulde.hlmatches import _hl_all_matches, _hl_matches
 
-original_text = """
+DEMO_TEXT = """
 Mary had a little lamb, little lamb, little lamb.
 123 Broadway St. San Antonio, TX 78205
 """
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(prog="python -m zgulde.hlmatches")
+    input_source_group = parser.add_mutually_exclusive_group(required=True)
+    input_source_group.add_argument("-t", "--text")
+    input_source_group.add_argument("-f", "--file", type=argparse.FileType("r"))
+    input_source_group.add_argument("--demo-text", action='store_true')
+
+    args = parser.parse_args()
+
+    if args.file:
+        original_text = args.file.read()
+    elif args.text:
+        original_text = args.text
+    else:
+        original_text = DEMO_TEXT
 
 # FIXME
 hilightfn = partial(
