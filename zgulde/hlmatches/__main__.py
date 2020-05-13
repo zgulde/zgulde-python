@@ -5,15 +5,15 @@ TODO:
 - better layout
 - customize colors
 - handle a regex subject that looks like the formatting html (replace("<", "\\<")?)
-- handle exceptions
-- cli for specifying text or file, custom colors
+- cli for specifying custom colors
 - cleanup code
 - multiline? regex flags?
 - output groupdict (or numeric equivalent) in another text window?
-- flag for all matches vs first match?
 """
 
+import re
 import sys
+
 from functools import partial
 from prompt_toolkit.application import Application
 from prompt_toolkit.buffer import Buffer
@@ -38,6 +38,7 @@ if __name__ == "__main__":
     input_source_group.add_argument("-t", "--text")
     input_source_group.add_argument("-f", "--file", type=argparse.FileType("r"))
     input_source_group.add_argument("--demo-text", action='store_true')
+    parser.add_argument('-a', '--all', help='Highlight all matches', action='store_true')
 
     args = parser.parse_args()
 
@@ -48,14 +49,20 @@ if __name__ == "__main__":
     else:
         original_text = DEMO_TEXT
 
-# FIXME
-hilightfn = partial(
-    _hl_matches,
-    start="<u>",
-    end="</u>",
-    groupstart="<firebrick>",
-    groupend="</firebrick>",
-)
+def highlight(regexp, subject):
+    fn = partial(
+        _hl_all_matches if args.all else _hl_matches,
+        regexp,
+        start="<u>",
+        end="</u>",
+        groupstart="<firebrick>",
+        groupend="</firebrick>",
+    )
+    if args.all:
+        output = fn(subject)
+    else:
+        output = '\n'.join([fn(line) for line in subject.split('\n')])
+    return HTML(output)
 
 input_field = Buffer()
 output_field = FormattedTextControl(original_text)
@@ -92,18 +99,9 @@ def handle_keypress(_):
         return
 
     try:
-        output = _hl_all_matches(
-            input_field.text,
-            original_text,
-            start="<u>",
-            end="</u>",
-            groupstart="<firebrick>",
-            groupend="</firebrick>",
-        )
-        # _hl_matches(line) for line in original_text.split('\n')
-        # output = highlightfn(input_field.text, original_text)
-        output_field.text = HTML(output)
-    except:
+        output = highlight(input_field.text, original_text)
+        output_field.text = output
+    except re.error as e:
         output_field.text = original_text
 
 
