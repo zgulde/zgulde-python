@@ -13,6 +13,7 @@ TODO:
 
 import re
 import sys
+from time import strftime
 
 from functools import partial
 from prompt_toolkit.application import Application
@@ -29,6 +30,9 @@ Mary had a little lamb, little lamb, little lamb.
 123 Broadway St. San Antonio, TX 78205
 """
 
+def log(msg):
+    with open('debug.log', 'a') as f:
+        f.write('\n[{}] {}'.format(strftime('%Y-%m-%d %H:%M:%S'), msg))
 
 if __name__ == "__main__":
     import argparse
@@ -62,7 +66,19 @@ def highlight(regexp, subject):
         output = fn(subject)
     else:
         output = '\n'.join([fn(line) for line in subject.split('\n')])
-    return HTML(output)
+
+    # TODO: fix this
+    try:
+        return HTML(output)
+    except:
+        log('Error when highlighting')
+        log('regexp:')
+        log(regexp)
+        log('subject:')
+        log(subject)
+        log('output:')
+        log(output)
+        return subject
 
 input_field = Buffer()
 output_field = FormattedTextControl(original_text)

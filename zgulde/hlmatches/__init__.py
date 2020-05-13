@@ -140,6 +140,9 @@ def _hl_matches(
     Does not handle nested groups.
     """
 
+    if subject == "":
+        return ""
+
     m = re.search(regexp, subject)
     if m is None:
         return subject
