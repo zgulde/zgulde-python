@@ -34,7 +34,7 @@ style = {
 
 def with_axs(it: Iterable[T], nrows: int, ncols: int, **kwargs) -> List[Tuple[mpl.axes.Axes, T]]:
     fig, axs = plt.subplots(nrows, ncols, **kwargs)
-    return zip(axs.ravel(), it):
+    return zip(axs.ravel(), it)
 
 
 def dual_axis(df: pd.DataFrame, x: str) -> Callable:
