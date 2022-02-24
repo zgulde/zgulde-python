@@ -23,5 +23,6 @@ setuptools.setup(
         "matplotlib>=2.2.0",
         "scikit-learn>=0.22.1",
         "GitPython==3.1.0",
+        "bcrypt>=3.2",
     ],
 )
