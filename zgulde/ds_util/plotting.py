@@ -1,5 +1,5 @@
 import math
-from typing import Callable, Iterable, T, List, Tuple
+from typing import Callable, Iterable, T, Tuple, Dict, Optional
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -32,7 +32,10 @@ style = {
     "patch.force_edgecolor": True,
 }
 
-def with_axs(it: Iterable[T], nrows: int, ncols: int, **kwargs) -> List[Tuple[mpl.axes.Axes, T]]:
+
+def with_axs(
+    it: Iterable[T], nrows: int, ncols: int, **kwargs
+) -> Iterable[Tuple[mpl.axes.Axes, T]]:
     fig, axs = plt.subplots(nrows, ncols, **kwargs)
     return zip(axs.ravel(), it)
 
@@ -240,6 +243,62 @@ def crosstab_scatter(
     ax.spines["right"].set_visible(False)
     ax.spines["top"].set_visible(False)
 
+    return ax
+
+
+def timeline(
+    df: pd.DataFrame,
+    x_start: str,
+    x_end: str,
+    text: Optional[str] = None,
+    colors: Optional[Dict[str, Callable[[pd.Series], bool]]] = None,
+    colorlabels: Optional[Dict[str, str]] = None,
+    ax=None,
+):
+    """
+    Assumes df has a sequential integer index.
+
+    Parameters
+    ----------
+
+    - df: a pandas data frame
+    - x_start: the column that contains the start dates
+    - x_end: the column that contains the end dates
+    - text: (optional) column that contains labels
+    - colors: a dictionary whose keys are color names and the values are a
+      function that accepts one row from the dataframe and returns true if that
+      color should be applied
+    - colorlabels: a dictionary whose keys are color names and values are
+      labels. Used to construct a legend
+    - ax: matplotlib axis to draw on. plt.gca() will be used if not provided
+    """
+    if not ax:
+        ax = plt.gca()
+
+    ax.set(xlim=(df[x_start].min(), df[x_end].max()), ylim=(0, len(df) + 1))
+
+    for idx, (_, row) in enumerate(df.iterrows()):
+        width = row[x_end] - row[x_start]
+        height = 0.8
+        r = mpl.patches.Rectangle(
+            (row[x_start], idx + 0.6), width, height, color="white", ec="black"
+        )
+        if colors:
+            for color, predicate in colors.items():
+                if predicate(row):
+                    r.set_color(color)
+        ax.add_patch(r)
+        if text:
+            x = row[x_start] + (row[x_end] - row[x_start]) / 2
+            y = idx + 1
+            ax.text(x, y, row[text], color="black", ha="center", va="center", size=13)
+    if colorlabels:
+        ax.legend(
+            handles=[
+                mpl.patches.Patch(color=color, label=label)
+                for color, label in colorlabels.items()
+            ]
+        )
     return ax
 
 
