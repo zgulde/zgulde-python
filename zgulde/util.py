@@ -18,6 +18,9 @@ from typing import (
     TypeVar,
 )
 
+import requests
+from bs4 import BeautifulSoup
+
 
 def md5(s: str) -> str:
     """
@@ -242,3 +245,8 @@ class MyRange:
         step = aslice.step if aslice.step is not None else 1
         stop = aslice.stop + 1 if aslice.stop is not None else 1
         return list(range(start, stop, step))
+
+
+def soupify(url: str) -> BeautifulSoup:
+    response = requests.get(url)
+    return BeautifulSoup(response.text)
