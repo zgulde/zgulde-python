@@ -118,3 +118,29 @@ def viz_dtree(X, y, **kwargs):
     )
     graph = graphviz.Source(dot, filename="dtree", format="png")
     graph.view(cleanup=True)
+
+def to_gsheet(df: pd.DataFrame, sheet_name: str, worksheet_name: str, include_index=True):
+    import gspread
+    from gspread_dataframe import get_as_dataframe, set_with_dataframe
+
+    gc = gspread.oauth()
+    sh = gc.open(sheet_name)
+    try:
+        sh.add_worksheet(worksheet_name)
+    except:
+        pass # sheet already exists
+    worksheet = sh.worksheet(worksheet_name)
+    set_with_dataframe(worksheet, df, include_index=include_index)
+
+def from_gsheet(sheet_name: str, worksheet_name: str):
+    '''
+    read a worksheet (worksheet_name) from a google sheets spreadsheet (sheet_name)
+    '''
+    import gspread
+    from gspread_dataframe import get_as_dataframe, set_with_dataframe
+
+    gc = gspread.oauth()
+    sh = gc.open(sheet_name)
+    worksheet = sh.worksheet(worksheet_name)
+
+    return get_as_dataframe(worksheet)
