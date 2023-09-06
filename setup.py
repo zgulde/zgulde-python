@@ -22,7 +22,7 @@ setuptools.setup(
         "pandas>=1.0.1",
         "matplotlib>=2.2.0",
         "scikit-learn>=0.22.1",
-        "GitPython==3.1.0",
+        "GitPython==3.1.34",
         "bcrypt>=3.2",
     ],
 )
