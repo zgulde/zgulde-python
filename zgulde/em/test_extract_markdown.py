@@ -123,7 +123,7 @@ def test_blank_lines_are_preserved_within_docs_or_code(extract_markdown):
 
 
 def test_blank_lines_between_docs_and_code_are_auto_inserted_if_not_present(
-    extract_markdown
+    extract_markdown,
 ):
     actual, expected = extract_markdown(
         """

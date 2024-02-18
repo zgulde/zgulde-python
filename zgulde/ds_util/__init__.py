@@ -1,3 +1,6 @@
+import os
+from functools import wraps
+
 import graphviz
 import pandas as pd
 from pydataset import data
@@ -9,8 +12,9 @@ from zgulde.ds_util.modeling import *
 # mode aggregation
 # tips.groupby('size').agg(stats.mode).apply(lambda s: s.apply(lambda v: v[0][0]))
 
-def with_caching(filename='data.csv', index=False, with_prints=True):
-    '''
+
+def with_caching(filename="data.csv", index=False, with_prints=True):
+    """
     Decorator for wrapping any function that returns a dataframe so that it
     saves the dataframe to a local file and on subsequent calls reads from the
     local file. Useful for data acquisition that can take a while.
@@ -28,7 +32,7 @@ def with_caching(filename='data.csv', index=False, with_prints=True):
     >>> @with_caching('demo.csv')
     ... def get_some_data():
     ...     return pd.DataFrame(dict(x=[1, 2, 3], y=list('abc')))
-    >>> os.unlink('demo.csv') # remove the cache file if it exists
+    >>> os.unlink('demo.csv') if os.path.exists('demo.csv') else None # remove the cache file if it exists
     >>> get_some_data()
     Reading data from get_some_data
        x  y
@@ -41,20 +45,23 @@ def with_caching(filename='data.csv', index=False, with_prints=True):
     0  1  a
     1  2  b
     2  3  c
-    '''
+    """
+
     def wrapper(fn):
         @wraps(fn)
         def f(*args, **kwargs):
             if os.path.exists(filename):
                 if with_prints:
-                    print('Reading from cached csv file')
+                    print("Reading from cached csv file")
                 return pd.read_csv(filename)
             if with_prints:
-                print(f'Reading data from {fn.__name__}')
+                print(f"Reading data from {fn.__name__}")
             df = fn(*args, **kwargs)
             df.to_csv(filename, index=index)
             return df
+
         return f
+
     return wrapper
 
 
@@ -92,10 +99,10 @@ def rdatasets():
 
 # https://stackoverflow.com/questions/50559078/generating-random-dates-within-a-given-range-in-pandas
 def rand_dates(start, end, n):
-    start_u = pd.to_datetime(start).value // 10 ** 9
-    end_u = pd.to_datetime(end).value // 10 ** 9
+    start_u = pd.to_datetime(start).value // 10**9
+    end_u = pd.to_datetime(end).value // 10**9
     return pd.DatetimeIndex(
-        (10 ** 9 * np.random.randint(start_u, end_u, n)).view("M8[ns]")
+        (10**9 * np.random.randint(start_u, end_u, n)).view("M8[ns]")
     )
 
 
@@ -119,23 +126,27 @@ def viz_dtree(X, y, **kwargs):
     graph = graphviz.Source(dot, filename="dtree", format="png")
     graph.view(cleanup=True)
 
-def to_gsheet(df: pd.DataFrame, sheet_name: str, worksheet_name: str, include_index=True):
+
+def to_gsheet(
+    df: pd.DataFrame, sheet_name: str, worksheet_name: str, include_index=True
+):
     import gspread
     from gspread_dataframe import get_as_dataframe, set_with_dataframe
 
     gc = gspread.oauth()
     sh = gc.open(sheet_name)
     try:
-        sh.add_worksheet(worksheet_name)
+        sh.add_worksheet(worksheet_name, 100, 100)
     except:
-        pass # sheet already exists
+        pass  # sheet already exists
     worksheet = sh.worksheet(worksheet_name)
     set_with_dataframe(worksheet, df, include_index=include_index)
 
+
 def from_gsheet(sheet_name: str, worksheet_name: str):
-    '''
+    """
     read a worksheet (worksheet_name) from a google sheets spreadsheet (sheet_name)
-    '''
+    """
     import gspread
     from gspread_dataframe import get_as_dataframe, set_with_dataframe
 

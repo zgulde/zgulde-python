@@ -1,5 +1,5 @@
 import math
-from typing import Callable, Iterable, T, Tuple, Dict, Optional
+from typing import Callable, Dict, Iterable, Optional, T, Tuple
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -108,11 +108,10 @@ def hist_by_group(x: pd.Series, g: pd.Series, *args, **kwargs):
     """
     >>> mpg = data('mpg')
     >>> hist_by_group(mpg.hwy, mpg.cyl)
-    (<Figure size ... with 4 Axes>, array([[<matplotlib.axes._subplots.AxesSubplot object at ...>,
-            <matplotlib.axes._subplots.AxesSubplot object at ...>],
-           [<matplotlib.axes._subplots.AxesSubplot object at ...>,
-            <matplotlib.axes._subplots.AxesSubplot object at ...>]],
-          dtype=object))
+    (<Figure size 1280x960 with 4 Axes>, array([[<AxesSubplot:title={'center':'4'}>,
+            <AxesSubplot:title={'center':'6'}>],
+           [<AxesSubplot:title={'center':'8'}>,
+            <AxesSubplot:title={'center':'Other'}>]], dtype=object))
     """
     fig, axs = plt.subplots(2, 2) if g.nunique() > 2 else plt.subplots(1, 2)
     fig.suptitle(f"Distribution of {x.name} by {g.name}")
@@ -142,7 +141,7 @@ def bar_by_group(x: pd.Series, g: pd.Series, aggfunc="mean", *args, **kwargs):
     """
     >>> mpg = data('mpg')
     >>> bar_by_group(mpg.hwy, mpg['class'])
-    (<Figure size ... with 1 Axes>, <matplotlib.axes._subplots.AxesSubplot object at ...>)
+    (<Figure size 1280x960 with 1 Axes>, <AxesSubplot:title={'center':'mean of hwy by class'}, xlabel='class'>)
     """
     g = g.top_n(3)
     fig, ax = plt.subplots()

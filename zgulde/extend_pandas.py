@@ -205,7 +205,7 @@ def qcut(s: Series, *args, **kwargs):
     4      (3.5, 6.0]
     5      (3.5, 6.0]
     dtype: category
-    Categories (2, interval[float64]): [(0.999, 3.5] < (3.5, 6.0]]
+    Categories (2, interval[float64, right]): [(0.999, 3.5] < (3.5, 6.0]]
     """
     return pd.qcut(s, *args, **kwargs)
 
@@ -242,7 +242,7 @@ def cut(s: Series, *args, **kwargs):
     4      (3.5, 6.0]
     5      (3.5, 6.0]
     dtype: category
-    Categories (2, interval[float64]): [(0.995, 3.5] < (3.5, 6.0]]
+    Categories (2, interval[float64, right]): [(0.995, 3.5] < (3.5, 6.0]]
     >>> x.cut(bins=[0, 3, 6])
     0    (0, 3]
     1    (0, 3]
@@ -251,7 +251,7 @@ def cut(s: Series, *args, **kwargs):
     4    (3, 6]
     5    (3, 6]
     dtype: category
-    Categories (2, interval[int64]): [(0, 3] < (3, 6]]
+    Categories (2, interval[int64, right]): [(0, 3] < (3, 6]]
     """
     return pd.cut(s, *args, **kwargs)
 
@@ -616,7 +616,7 @@ def correlation_heatmap(df: DataFrame, fancy=False, **kwargs):
     >>> y = x / 2
     >>> df = pd.DataFrame(dict(x=x, y=y))
     >>> df.correlation_heatmap()
-    <matplotlib.axes._subplots.AxesSubplot object at ...>
+    <AxesSubplot:>
     """
     if "cmap" not in kwargs:
         kwargs["cmap"] = cm.coolwarm_r
@@ -924,15 +924,15 @@ def chi2(df: DataFrame) -> Tuple[DataFrame, DataFrame]:
     >>> tips = load_dataset('tips')
     >>> p_vals, chi2s = tips[['smoker', 'time', 'day']].chi2()
     >>> p_vals
-                 smoker        time          day
-    smoker          NaN    0.477149  1.05676e-05
-    time       0.477149         NaN   8.4499e-47
-    day     1.05676e-05  8.4499e-47          NaN
+              smoker      time       day
+    smoker       NaN  0.477149  0.000011
+    time    0.477149       NaN       0.0
+    day     0.000011       0.0       NaN
     >>> chi2s
-              smoker      time      day
-    smoker       NaN  0.505373  25.7872
-    time    0.505373       NaN  217.113
-    day      25.7872   217.113      NaN
+               smoker        time         day
+    smoker        NaN    0.505373   25.787217
+    time     0.505373         NaN  217.112673
+    day     25.787217  217.112673         NaN
     """
     p_vals = pd.DataFrame(index=df.columns, columns=df.columns)
     chi2s = p_vals.copy()

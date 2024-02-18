@@ -2,12 +2,12 @@
 Module full of various helpers for creating matplotlib animations.
 """
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytweening
-from sklearn.preprocessing import MinMaxScaler
-import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+from sklearn.preprocessing import MinMaxScaler
 
 
 # In order to get the final points, there's 2 high-level steps:

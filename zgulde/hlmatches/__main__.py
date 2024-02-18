@@ -12,16 +12,16 @@ TODO:
 
 import re
 import sys
+from functools import partial
 from time import strftime
 
-from functools import partial
+from prompt_toolkit import HTML
 from prompt_toolkit.application import Application
 from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.layout.containers import HSplit, VSplit, Window, WindowAlign
 from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
 from prompt_toolkit.layout.layout import Layout
-from prompt_toolkit import HTML
 
 DEMO_TEXT = """
 Mary had a little lamb, little lamb, little lamb.
@@ -31,9 +31,11 @@ Mary had a little lamb, little lamb, little lamb.
 123.123.123.123 - - [12/May/2020:13:37:02 +0000] "GET /api/v1/items HTTP/1.1" 200 3561 "-" "python-requests/2.23.0"
 """
 
+
 def log(msg):
-    with open('debug.log', 'a') as f:
-        f.write('\n[{}] {}'.format(strftime('%Y-%m-%d %H:%M:%S'), msg))
+    with open("debug.log", "a") as f:
+        f.write("\n[{}] {}".format(strftime("%Y-%m-%d %H:%M:%S"), msg))
+
 
 if __name__ == "__main__":
     import argparse
@@ -42,8 +44,10 @@ if __name__ == "__main__":
     input_source_group = parser.add_mutually_exclusive_group(required=True)
     input_source_group.add_argument("-t", "--text")
     input_source_group.add_argument("-f", "--file", type=argparse.FileType("r"))
-    input_source_group.add_argument("--demo-text", action='store_true')
-    parser.add_argument('-a', '--all', help='!Experimental! Highlight all matches', action='store_true')
+    input_source_group.add_argument("--demo-text", action="store_true")
+    parser.add_argument(
+        "-a", "--all", help="!Experimental! Highlight all matches", action="store_true"
+    )
 
     args = parser.parse_args()
 
@@ -57,7 +61,7 @@ if __name__ == "__main__":
 # TODO: looks like there's some duplicattion between hlmatch and hlmatches,
 # maybe we could extract a common function here.
 def hlmatch(regexp, subject, start, end, groupstart, groupend):
-    '''
+    """
     >>> from functools import partial
     >>> hl = partial(hlmatches, start='[', end=']', groupstart='(', groupend=')')
     >>> hl(r'.+', 'abc')
@@ -68,11 +72,16 @@ def hlmatch(regexp, subject, start, end, groupstart, groupend):
     HTML('[a(b)c]')
     >>> hl(r'^(\d+).*?(\d+)$', '123 broadway st san antonio tx 78205')
     HTML('[(123) broadway st san antonio tx (78205)]')
-    '''
+    """
     match = re.search(regexp, subject)
-    if not match or len(regexp) == 0 or len(subject) == 0 or match.start() == match.end():
-        return ''.join(['{}'] * len(subject)), subject
-    output = ['{}'] * len(subject)
+    if (
+        not match
+        or len(regexp) == 0
+        or len(subject) == 0
+        or match.start() == match.end()
+    ):
+        return "".join(["{}"] * len(subject)), subject
+    output = ["{}"] * len(subject)
     n_groups = len(match.groups())
     if n_groups > 0:
         for i in range(1, n_groups + 1):
@@ -82,13 +91,14 @@ def hlmatch(regexp, subject, start, end, groupstart, groupend):
             output[match.end(i) - 1] = output[match.end(i) - 1] + groupend
     output[match.start()] = start + output[match.start()]
     output[match.end() - 1] = output[match.end() - 1] + end
-    return ''.join(output), subject
+    return "".join(output), subject
+
 
 def hlmatches(regexp, subject, start, end, groupstart, groupend):
     matches = list(re.finditer(regexp, subject, re.MULTILINE))
     if not matches or len(regexp) == 0 or len(subject) == 0:
-        return ''.join(['{}'] * len(subject)), subject
-    output = ['{}'] * len(subject)
+        return "".join(["{}"] * len(subject)), subject
+    output = ["{}"] * len(subject)
     for match in matches:
         if match.start() == match.end():
             continue
@@ -101,8 +111,7 @@ def hlmatches(regexp, subject, start, end, groupstart, groupend):
                 output[match.end(i) - 1] = output[match.end(i) - 1] + groupend
         output[match.start()] = start + output[match.start()]
         output[match.end() - 1] = output[match.end() - 1] + end
-    return ''.join(output), subject
-
+    return "".join(output), subject
 
 
 def highlight(regexp, subject):
@@ -119,9 +128,9 @@ def highlight(regexp, subject):
         output_fmt, subject = fn(subject)
         output = HTML(output_fmt).format(*subject)
     else:
-        highlights = [fn(line) for line in subject.split('\n')]
-        output_fmt = '\n'.join([h[0] for h in highlights])
-        subjects = ''.join([h[1] for h in highlights])
+        highlights = [fn(line) for line in subject.split("\n")]
+        output_fmt = "\n".join([h[0] for h in highlights])
+        subjects = "".join([h[1] for h in highlights])
         output = HTML(output_fmt).format(*subjects)
 
     try:
@@ -130,21 +139,25 @@ def highlight(regexp, subject):
         # TODO: we probably shouldn't swallow *all* errors here
         return subject
 
+
 input_field = Buffer()
 output_field = FormattedTextControl(original_text)
-message_field = FormattedTextControl('Enter regexp below:')
+message_field = FormattedTextControl("Enter regexp below:")
 
 input_window = Window(BufferControl(buffer=input_field), height=1)
 message_window = Window(message_field, height=1)
 output_window = Window(output_field)
 
-body = HSplit([output_window,
-    Window(height=1, char="-", style="class:line"),
-    message_window,
-    Window(height=1, char="-", style="class:line"),
-    input_window,
-    Window(height=1, char="-", style="class:line"),
-])
+body = HSplit(
+    [
+        output_window,
+        Window(height=1, char="-", style="class:line"),
+        message_window,
+        Window(height=1, char="-", style="class:line"),
+        input_window,
+        Window(height=1, char="-", style="class:line"),
+    ]
+)
 
 title_window = Window(
     height=1,
@@ -172,10 +185,10 @@ def handle_keypress(_):
 
     try:
         output_field.text = highlight(input_field.text, original_text)
-        message_field.text = 'Enter regexp below:'
+        message_field.text = "Enter regexp below:"
     except re.error as e:
         output_field.text = original_text
-        message_field.text = HTML('<red>Error: {}</red>'.format(e.msg))
+        message_field.text = HTML("<red>Error: {}</red>".format(e.msg))
 
 
 input_field.on_text_changed += handle_keypress

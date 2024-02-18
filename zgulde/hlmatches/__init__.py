@@ -60,7 +60,7 @@ def _starts_ends_overall(m: Match) -> Tuple[MatchIndexes, MatchIndexes, MatchInd
 
 
 def _starts_ends_overalls(
-    matches: Iterator[Match]
+    matches: Iterator[Match],
 ) -> Tuple[MatchIndexes, MatchIndexes, MatchIndexes, MatchIndexes]:
     """
     >>> matches = re.finditer(r'.', 'abc')
